@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { TypeAnimation } from "react-type-animation";
 
 import { LatestPost } from "~/app/_components/post";
 import { getServerAuthSession } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
+import { Typing } from "./_components/type-animation";
 
 export default async function Home() {
   const hello = await api.post.hello({ text: "from tRPC" });
@@ -14,9 +16,9 @@ export default async function Home() {
     <HydrateClient>
       <main className="flex min-h-screen flex-col items-center justify-center bg-slate-800 text-white">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-bold sm:text-[6rem] bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500">
-  Oppie
-</h1>
+          <h1 className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-5xl font-bold text-transparent sm:text-[6rem]">
+            Oppie
+          </h1>
           <p>Your personal information library</p>
 
           <div className="flex flex-col items-center gap-2">
@@ -36,6 +38,7 @@ export default async function Home() {
               </Link>
             </div>
           </div>
+          <Typing />
 
           {session?.user && <LatestPost />}
         </div>
