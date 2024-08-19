@@ -6,13 +6,13 @@ export function Typing() {
   return (
     <TypeAnimation
       sequence={[
-        "A better way to store your knowledge", // Types 'One'
-        1000, // Waits 1s
-        "A better way to store your code", // Deletes 'One' and types 'Two'
+        "A better way to save your knowledge", // Types 'One'
+        3000, // Waits 1s
+        "A better way to save your code", // Deletes 'One' and types 'Two'
         2000, // Waits 2s
-        "A better way to store your insights", // Types 'Three' without deleting 'Two'
+        "A better way to save your insights", // Types 'Three' without deleting 'Two'
         2000,
-        "A better way to store your ideas", // Types 'Three' without deleting 'Two'
+        "A better way to save your ideas", // Types 'Three' without deleting 'Two'
         2000,
       ]}
       wrapper="span"
