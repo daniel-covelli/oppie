@@ -15,13 +15,13 @@ export default async function Home() {
   return (
     <HydrateClient>
       <main className="flex min-h-screen flex-col items-center justify-center bg-slate-800 text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-5xl font-bold text-transparent sm:text-[6rem]">
+        <div className="container flex flex-col items-start justify-center gap-8 px-4 py-16">
+          <h1 className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-6xl font-bold text-transparent sm:text-[8rem]">
             Oppie
           </h1>
-          <p>Your personal information library</p>
+          <Typing />
 
-          <div className="flex flex-col items-center gap-2">
+          {/* <div className="flex flex-col items-center gap-2">
             <p className="text-2xl text-white">
               {hello ? hello.greeting : "Loading tRPC query..."}
             </p>
@@ -37,10 +37,9 @@ export default async function Home() {
                 {session ? "Sign out" : "Sign in"}
               </Link>
             </div>
-          </div>
-          <Typing />
+          </div> */}
 
-          {session?.user && <LatestPost />}
+          {/* {session?.user && <LatestPost />} */}
         </div>
       </main>
     </HydrateClient>
