@@ -1,9 +1,10 @@
 import { getProviders } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "~/server/auth";
-import LoginButton from "../_components/login-button";
-import { Typing } from "../_components/type-animation";
+
 import Link from "next/link";
+import BrandText from "../_components/brand-text";
+import { LoginButton, Typing } from "./client-components";
 
 export default async function Login() {
   const providers = await getNextAuthProviders();
@@ -12,9 +13,7 @@ export default async function Login() {
     <main className="mx-auto max-w-7xl px-4 md:px-12">
       <div className="grid items-center justify-center gap-8 pt-8 md:min-h-screen md:grid-cols-2 md:pt-0">
         <div className="flex flex-col items-center gap-8 md:items-start">
-          <h1 className="w-fit bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-7xl font-bold text-transparent">
-            Oppie
-          </h1>
+          <BrandText className="text-7xl">Oppie</BrandText>
           <Typing />
 
           <h2 className="text-sm text-slate-300">

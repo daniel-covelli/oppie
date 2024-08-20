@@ -47,11 +47,14 @@ model Account {
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id             String   @id @default(cuid())
+    sessionToken   String   @unique
+    userId         String
+    framework      String?
+    language       String?
+    stylingLibrary String?
+    expires        DateTime
+    user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {

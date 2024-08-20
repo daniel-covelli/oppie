@@ -6,6 +6,7 @@ import {
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
+import { z } from "zod";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
@@ -20,6 +21,9 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      framework?: "React";
+      language?: "TypeScript";
+      stylingLibrary?: "Tailwind";
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -31,6 +35,19 @@ declare module "next-auth" {
   // }
 }
 
+const NewSessionSchema = z.object({
+  user: z.object({
+    name: z.string(),
+    email: z.string(),
+    image: z.string(),
+    id: z.string(),
+    framework: z.enum(["React"]),
+    language: z.enum(["TypeScript"]),
+    stylingLibrary: z.enum(["Tailwind"]),
+  }),
+  expires: z.string(),
+});
+
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
  *
@@ -38,13 +55,25 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: async ({ session, user }) => {
+      const sessions = await db.session.findMany({
+        where: { userId: user.id },
+      });
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+          ...(sessions && sessions.length > 0
+            ? {
+                framework: sessions[0]?.framework,
+                language: sessions[0]?.language,
+                stylingLibrary: sessions[0]?.stylingLibrary,
+              }
+            : {}),
+        },
+      };
+    },
   },
   adapter: PrismaAdapter(db) as Adapter,
   providers: [
