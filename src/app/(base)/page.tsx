@@ -2,22 +2,25 @@ import { redirect } from "next/navigation";
 
 import { getServerAuthSession } from "~/server/auth";
 import Button from "../_components/button";
-import { RemoveSessionButton, SelectReactButton } from "./client-components";
+import { Message, SelectReactButton } from "./client-components";
+import React from "react";
+import ReactIcon from "../_components/svgs/react";
+import Tag from "../_components/tag";
+import TailwindIcon from "../_components/svgs/tailwind";
+import TypescriptIcon from "../_components/svgs/typescript";
+import { hasClaudeSessionBeenEstablished } from "~/server/ssr-utils";
 
 export default async function Home() {
-  const session = await getSessionOrRedirect();
-  if (
-    !session.user.language ||
-    !session.user.framework ||
-    !session.user.stylingLibrary
-  ) {
+  await getSessionOrRedirect();
+  const isSessionEstablished = await hasClaudeSessionBeenEstablished();
+  if (!isSessionEstablished) {
     return (
       <div>
         <p className="text-5xl">Welcome to Oppie 👋</p>
         <p className="pt-4 text-xl tracking-tighter text-slate-200">
           Please select a code output type for your purposes today
         </p>
-        <div className="grid grid-cols-3 gap-8 pt-12">
+        <div className="grid gap-8 pt-12 md:grid-cols-2 lg:grid-cols-3">
           <div className="flex flex-col rounded-lg border border-slate-700 bg-slate-750 p-4">
             <p className="text-2xl font-bold">Typescript, React, Tailwind</p>
             <p className="pb-8 pt-4 tracking-tighter text-slate-200">
@@ -41,21 +44,20 @@ export default async function Home() {
   }
 
   return (
-    <div>
-      <p className="text-5xl">Get building</p>
-      <RemoveSessionButton />
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-row gap-2 pb-4">
+        <Tag icon={ReactIcon} text="React" />
+        <Tag icon={TypescriptIcon} text="TypeScript" />
+        <Tag icon={TailwindIcon} text="Tailwind" />
+      </div>
+      <Message />
     </div>
   );
 }
 
 async function getSessionOrRedirect() {
   const session = await getServerAuthSession();
-  console.log("session", JSON.stringify(session, null, 2));
-
-  // If the user is authenticated, continue as normal
   if (!session) {
     redirect("/login");
   }
-
-  return session;
 }

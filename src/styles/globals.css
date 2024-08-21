@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Disable outline for CodeMirror editor */
+.ͼ1.cm-focused {
+    outline: none !important;
+}

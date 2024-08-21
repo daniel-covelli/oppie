@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
-export const session = createTRPCRouter({
+export const sessionRouter = createTRPCRouter({
   updateSession: protectedProcedure.mutation(async ({ ctx }) => {
     await ctx.db.session.updateMany({
       where: { userId: ctx.session.user.id },

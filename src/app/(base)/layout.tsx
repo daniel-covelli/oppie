@@ -1,41 +1,42 @@
 import { HydrateClient } from "~/trpc/server";
 import BrandText from "../_components/brand-text";
-import { SignOutButton } from "./client-components";
+import { HomeButton, SignOutButton } from "./client-components";
+import Button from "../_components/button";
+import { hasClaudeSessionBeenEstablished } from "~/server/ssr-utils";
+import Chevron from "../_components/svgs/chevron";
+import Folders from "./_client-components.tsx/folders";
 
-export default function Layout({
+export default async function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const isSessionEstablished = await hasClaudeSessionBeenEstablished();
+
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
       <aside className="w-64 bg-slate-750 shadow-xl">
-        <div className="p-4">
-          <BrandText className="text-3xl">Oppie</BrandText>
+        <div className="flex flex-col p-4">
+          <BrandText className="pb-8 text-3xl">Oppie</BrandText>
+          <Folders />
         </div>
-        {/* <nav className="mt-6">
-          <Link href="/" className="block px-4 py-2 hover:bg-gray-700">
-            Home
-          </Link>
-          <Link href="/about" className="block px-4 py-2 hover:bg-gray-700">
-            About
-          </Link>
-          <Link href="/contact" className="block px-4 py-2 hover:bg-gray-700">
-            Contact
-          </Link>
-        </nav> */}
       </aside>
-
-      {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
         <header className="border-b border-slate-750">
           <div className="flex flex-row items-center justify-between px-6 py-3">
-            <h2 className="text-2xl text-slate-200">Dashboard</h2>
+            <div className="flex flex-row items-center gap-1">
+              <HomeButton disabled={!isSessionEstablished} />
+              {isSessionEstablished && (
+                <>
+                  <Chevron className="h-2 rotate-180" />
+                  <Button disabled={true} size="sm" icon variant="transparent">
+                    Generate
+                  </Button>
+                </>
+              )}
+            </div>
+
             <SignOutButton />
           </div>
         </header>
-
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-800">
           <div className="mx-auto max-w-7xl px-6 py-8">
             <HydrateClient>{children}</HydrateClient>

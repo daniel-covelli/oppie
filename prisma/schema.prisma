@@ -66,6 +66,8 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    Folder        Folder[]
+    File          File[]
 }
 
 model VerificationToken {
@@ -74,4 +76,46 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Folder {
+    id        String   @id @default(uuid())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Self-relation for parent-child relationship
+    parentId String?
+    parent   Folder?  @relation("FolderToFolder", fields: [parentId], references: [id])
+    children Folder[] @relation("FolderToFolder")
+
+    // Relation to files contained in this folder
+    files File[]
+
+    // Relation to user who owns this folder
+    ownerId String
+    owner   User   @relation(fields: [ownerId], references: [id])
+
+    @@index([parentId])
+    @@index([ownerId])
+}
+
+model File {
+    id   String @id @default(uuid())
+    name String
+    text String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relation to the folder containing this file
+    folderId String
+    folder   Folder @relation(fields: [folderId], references: [id])
+
+    // Relation to user who owns this file
+    ownerId String
+    owner   User   @relation(fields: [ownerId], references: [id])
+
+    @@index([folderId])
+    @@index([ownerId])
 }

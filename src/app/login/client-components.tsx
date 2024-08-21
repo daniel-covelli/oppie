@@ -28,7 +28,7 @@ export function Typing() {
         3000, // Waits 2s
         "A better way to save your components", // Types 'Three' without deleting 'Two'
         3000,
-        "A better way to save your notes", // Types 'Three' without deleting 'Two'
+        "A better way to save your algorithms", // Types 'Three' without deleting 'Two'
         3000,
       ]}
       preRenderFirstString

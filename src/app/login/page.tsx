@@ -29,7 +29,7 @@ export default async function Login() {
           </h2>
         </div>
         <div className="flex items-center justify-center">
-          <div className="flex flex-col items-center gap-10 rounded-lg bg-slate-700 p-8 shadow">
+          <div className="flex flex-col items-center gap-10 rounded-lg border border-slate-700 bg-slate-750 p-8 shadow">
             <h2 className="text-3xl">Login </h2>
             {Object.values(providers).map((provider) => (
               <div key={provider.name}>

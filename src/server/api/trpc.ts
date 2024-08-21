@@ -36,6 +36,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   };
 };
 
+export type AppContext = Awaited<ReturnType<typeof createTRPCContext>>;
+
 /**
  * 2. INITIALIZATION
  *
