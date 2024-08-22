@@ -220,6 +220,10 @@ export default function Folder({ folder }: { folder: FolderType }) {
   const [opened, setOpened] = useState(false);
   const pathname = usePathname();
 
+  const hasChildren =
+    (folder.children && folder.children.length > 0) ??
+    (folder.files && folder.files.length > 0);
+
   return (
     <>
       <ActionWrapper
@@ -229,12 +233,10 @@ export default function Folder({ folder }: { folder: FolderType }) {
             className="rounded p-1 hover:bg-slate-600"
             onClick={(e) => {
               e.stopPropagation();
-              setOpened((prev) =>
-                folder.children && folder.children.length > 0 ? !prev : prev,
-              );
+              setOpened((prev) => (hasChildren ? !prev : prev));
             }}
           >
-            {hovered && folder.children && folder.children.length > 0 ? (
+            {hovered && hasChildren ? (
               <Chevron className="size-4 -rotate-90 p-0.5 text-slate-300" />
             ) : opened ? (
               <FolderOpenSolid className="size-4" />
@@ -257,9 +259,9 @@ export default function Folder({ folder }: { folder: FolderType }) {
           {folder.heading.content}
         </Link>
       </ActionWrapper>
-      {opened && folder.children && folder.children.length > 0 && (
+      {opened && hasChildren && (
         <div className="flex flex-col pl-5">
-          {folder.children.map((children) => (
+          {folder.children?.map((children) => (
             <Folder key={`${folder.id}${children.id}`} folder={children} />
           ))}
           {folder.files?.map((file) => (
