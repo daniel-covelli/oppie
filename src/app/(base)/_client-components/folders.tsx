@@ -45,9 +45,7 @@ export default function Folders() {
           <ActionWrapper
             actions={() => (
               <button
-                onClick={(e) => {
-                  modalOpenState[1](true);
-                }}
+                onClick={() => modalOpenState[1](true)}
                 className="flex flex-1 flex-row items-center gap-2 rounded p-1 leading-snug text-slate-200 hover:bg-slate-600"
               >
                 <Plus className="size-4" />

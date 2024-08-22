@@ -1,20 +1,28 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { ComponentTypes } from "@prisma/client";
 
-export const fileRouter = createTRPCRouter({
-  addFile: protectedProcedure
+export const componentRouter = createTRPCRouter({
+  addComponent: protectedProcedure
     .input(
       z.object({
-        heading: z.string(),
-        folderId: z.string(),
+        type: z.enum([
+          ComponentTypes.BODY,
+          ComponentTypes.CODE,
+          ComponentTypes.HEADING,
+        ]),
+        content: z.string(),
+        fileId: z.string(),
+        position: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.file.create({
+      return ctx.db.component.create({
         data: {
-          owner: { connect: { id: ctx.session.user.id } },
-          folder: { connect: { id: input.folderId } },
-          heading: { create: { content: input.heading, type: "HEADING" } },
+          type: input.type,
+          content: input.content,
+          position: input.position,
+          file: { connect: { id: input.fileId } },
         },
       });
     }),

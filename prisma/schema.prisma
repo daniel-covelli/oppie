@@ -14,18 +14,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
-}
-
 // Necessary for Next auth
 model Account {
     id                       String  @id @default(cuid())
@@ -65,9 +53,8 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
-    Folder        Folder[]
-    File          File[]
+    folders       Folder[]
+    files         File[]
 }
 
 model VerificationToken {
@@ -117,9 +104,9 @@ model File {
     folder   Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
 
     // Relation to user who owns this file
-    ownerId   String
-    owner     User        @relation(fields: [ownerId], references: [id])
-    Component Component[] @relation("FileComponents")
+    ownerId    String
+    owner      User        @relation(fields: [ownerId], references: [id])
+    components Component[] @relation("FileComponents")
 
     @@index([folderId])
     @@index([ownerId])
