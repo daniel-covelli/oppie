@@ -79,14 +79,17 @@ model VerificationToken {
 }
 
 model Folder {
-    id        String   @id @default(uuid())
-    name      String
+    id String @id @default(uuid())
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
+    headingId String    @unique
+    heading   Component @relation("FolderHeading", fields: [headingId], references: [id])
+
     // Self-relation for parent-child relationship
     parentId String?
-    parent   Folder?  @relation("FolderToFolder", fields: [parentId], references: [id])
+    parent   Folder?  @relation("FolderToFolder", fields: [parentId], references: [id], onDelete: Cascade)
     children Folder[] @relation("FolderToFolder")
 
     // Relation to files contained in this folder
@@ -101,21 +104,42 @@ model Folder {
 }
 
 model File {
-    id   String @id @default(uuid())
-    name String
-    text String
+    id String @id @default(uuid())
+
+    headingId String    @unique
+    heading   Component @relation("FileHeading", fields: [headingId], references: [id])
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     // Relation to the folder containing this file
     folderId String
-    folder   Folder @relation(fields: [folderId], references: [id])
+    folder   Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
 
     // Relation to user who owns this file
-    ownerId String
-    owner   User   @relation(fields: [ownerId], references: [id])
+    ownerId   String
+    owner     User        @relation(fields: [ownerId], references: [id])
+    Component Component[] @relation("FileComponents")
 
     @@index([folderId])
     @@index([ownerId])
+}
+
+enum ComponentTypes {
+    HEADING
+    BODY
+    CODE
+}
+
+model Component {
+    id      String @id @default(uuid())
+    content String
+
+    position Int?
+    type     ComponentTypes @default(BODY)
+
+    fileId         String?
+    file           File?   @relation("FileComponents", fields: [fileId], references: [id])
+    headingForFile File?   @relation("FileHeading")
+    folder         Folder? @relation("FolderHeading")
 }

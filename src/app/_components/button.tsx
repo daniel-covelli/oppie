@@ -35,7 +35,7 @@ const CustomButton = <T extends ElementType = "button">({
   return (
     <Component
       className={clsx(
-        "px-4 py-1 font-medium leading-snug shadow-inner shadow-white/10",
+        "px-4 py-2 font-medium leading-none shadow-inner shadow-white/10",
         "transition-colors focus:outline-none",
         rounded ? "rounded-full" : "rounded-md",
         {
@@ -44,7 +44,7 @@ const CustomButton = <T extends ElementType = "button">({
             secondary:
               "bg-sky-600 text-slate-50 hover:bg-sky-700 disabled:bg-sky-800 disabled:text-slate-400",
             success: "bg-green-500 text-slate-50 hover:bg-green-600",
-            danger: "bg-red-500 text-slate-50 hover:bg-red-600",
+            danger: "bg-red-700 text-slate-200 hover:bg-red-800",
             special: "",
           },
           outline: {

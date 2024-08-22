@@ -18,7 +18,7 @@ const BrandText = <T extends ElementType = "h1">({
   return (
     <Component
       className={clsx(
-        "w-fit bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400",
+        "bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400",
         "bg-clip-text font-bold text-transparent",
         className,
       )}

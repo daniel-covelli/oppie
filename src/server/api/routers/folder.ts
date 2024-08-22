@@ -4,12 +4,17 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 export const folderRouter = createTRPCRouter({
   addFolder: protectedProcedure
     .input(
-      z.object({ name: z.string().min(1), parentId: z.string().optional() }),
+      z.object({
+        heading: z.string(),
+        parentId: z.string().optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.folder.create({
         data: {
-          name: input.name,
+          heading: {
+            create: { content: input.heading, type: "HEADING" },
+          },
           owner: { connect: { id: ctx.session.user.id } },
           ...(input.parentId
             ? { parent: { connect: { id: input.parentId } } }
@@ -21,16 +26,19 @@ export const folderRouter = createTRPCRouter({
   getFolders: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.folder.findMany({
       where: { ownerId: ctx.session.user.id, parentId: null },
-      orderBy: { name: "asc" },
       include: {
-        files: true,
+        heading: true,
+        files: { include: { heading: true } },
         children: {
-          orderBy: { name: "asc" },
           include: {
-            files: true,
+            heading: true,
+            files: { include: { heading: true } },
             children: {
-              orderBy: { name: "asc" },
-              include: { files: true, children: true },
+              include: {
+                files: { include: { heading: true } },
+                children: true,
+                heading: true,
+              },
             },
           },
         },
@@ -38,7 +46,7 @@ export const folderRouter = createTRPCRouter({
     });
   }),
 
-  deleteFolders: protectedProcedure
+  deleteFolder: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.folder.delete({
