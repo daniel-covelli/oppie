@@ -4,48 +4,96 @@ import { api } from "~/trpc/react";
 import Folder from "./folder";
 import ActionWrapper from "~/app/_components/action-wrapper";
 import Plus from "~/app/_components/svgs/plus";
-import { HeadingModal } from "~/app/_components/modal";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import AddTitleModal, {
+  useOpenAddTitleModal,
+} from "~/app/_components/modal/add-title-modal";
+import AlertModal from "~/app/_components/modal/alert-modal";
+
+// type State = {
+//   openSet: Set<string>;
+//   // closeSet: Set<string>;
+// };
+
+// type Action = {
+//   updateOpenSet: (openSet: State["openSet"]) => void;
+//   // updateCloseSet: (closeSet: State["closeSet"]) => void;
+//   // addToOpenSet: (id: string, openSet: State["openSet"]) => void
+//   // addToClosedSet: (id: string, closeSet: State["closeSet"]) => void
+// };
+
+// export const useOpenFilesStore = create<State & Action>((set) => ({
+//   openSet: new Set<string>(),
+//   // closeSet: new Set<string>(),
+//   updateOpenSet: (openSet) => set(() => ({ openSet })),
+//   // updateCloseSet: (closeSet) => set(() => ({ closeSet })),
+//   // addToOpenSet: (id, openSet) => set(() => ({openSet: openSet.add(id)})),
+//   // addToCloseSet: (id, closeSet) => set(() => ({closeSet: closeSet.add(id)}))
+// }));
+
+// interface Folders {
+//   id: string;
+//   parents?: Folders[];
+//   children?: Folders[];
+//   files?: { id: string }[];
+// }
+
+// const useOpenFiles = (folders: RouterOutputs["folder"]["getFolders"]) => {
+//   const pathName = usePathname();
+
+//   const { updateOpenSet, openSet } = useOpenFilesStore();
+
+//   const dfs = useCallback(
+//     (folder: Folders): boolean => {
+//       if (!folder.children) return false;
+//       if (pathName.includes(folder.id)) {
+//         return true;
+//       }
+//       let res = false;
+//       for (const file of folder.files ?? []) {
+//         if (pathName.includes(file.id)) {
+//           res = true;
+//         }
+//       }
+
+//       for (const child of folder.children) {
+//         res = dfs(child);
+//       }
+
+//       if (res) {
+//         updateOpenSet(openSet.add(folder.id));
+//       }
+//       return res;
+//     },
+//     [openSet, pathName, updateOpenSet],
+//   );
+
+//   useEffect(() => {
+//     updateOpenSet(new Set());
+//     if (folders) {
+//       for (const folder of folders) {
+//         dfs(folder);
+//       }
+//     }
+//   }, [pathName, folders, updateOpenSet, dfs]);
+// };
 
 export default function Folders() {
-  const [folders] = api.folder.getFolders.useSuspenseQuery();
-  const modalOpenState = useState(false);
-  const inputState = useState("");
-  const utils = api.useUtils();
-  const router = useRouter();
-  const addFolder = api.folder.addFolder.useMutation({
-    onSuccess: async (data) => {
-      await utils.folder.getFolders.invalidate();
-      modalOpenState[1](false);
-
-      router.push(`/folder/${data.id}`);
-      setTimeout(() => {
-        inputState[1]("");
-      }, 1000);
-    },
-  });
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!inputState[0]) return;
-
-    addFolder.mutate({ heading: inputState[0] });
-  };
+  const { data: folders } = api.folder.getFolders.useQuery();
+  const handleOpen = useOpenAddTitleModal();
+  // useOpenFiles(folders);
 
   return (
     <>
-      <HeadingModal
-        openState={modalOpenState}
-        inputState={inputState}
-        onSubmit={handleSubmit}
-      />
+      <AddTitleModal />
+      <AlertModal />
       <div className="flex flex-col">
         <div className="pl-2.5 pr-4">
           <ActionWrapper
             actions={() => (
               <button
-                onClick={() => modalOpenState[1](true)}
+                onClick={(e) => {
+                  handleOpen(e, { type: "folder" });
+                }}
                 className="flex flex-1 flex-row items-center gap-2 rounded p-1 leading-snug text-slate-200 hover:bg-slate-600"
               >
                 <Plus className="size-4" />
@@ -56,7 +104,7 @@ export default function Folders() {
           </ActionWrapper>
         </div>
 
-        {folders.length > 0 ? (
+        {folders && folders.length > 0 ? (
           <div className="pl-2.5 pr-4">
             {folders.map((folder) => (
               <Folder key={folder.id} folder={folder} />

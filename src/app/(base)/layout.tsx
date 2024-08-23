@@ -6,18 +6,21 @@ import { hasClaudeSessionBeenEstablished } from "~/server/ssr-utils";
 import Chevron from "../_components/svgs/chevron";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
+import Folders from "./_client-components/folders";
+// import dynamic from "next/dynamic";
 // import Folders from "./_client-components/folders";
 
-const Folders = dynamic(() => import("./_client-components/folders"), {
-  loading: () => <p>Loading...</p>,
-  ssr: false,
-});
+// const Folders = dynamic(() => import("./_client-components/folders"), {
+//   // loading: () => <p>Loading...</p>,
+//   ssr: false,
+// });
 export default async function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const isSessionEstablished = await hasClaudeSessionBeenEstablished();
-  void api.folder.getFolders.prefetch();
+
+  const folders = await api.folder.getFolders();
+  void await api.folder.getFolders.prefetch();
 
   return (
     <HydrateClient>
@@ -28,12 +31,7 @@ export default async function Layout({
               Oppie
             </BrandText>
           </div>
-
-          {/* <div className="ml-3.5 mr-4 flex flex-col pb-4 pt-4">
-            <Button color="primary">Generate</Button>
-          </div> */}
-
-          <Folders />
+          <Folders initialFolders={folders} />
         </aside>
         <div className="flex flex-1 flex-col overflow-hidden">
           <header className="border-b border-slate-750">

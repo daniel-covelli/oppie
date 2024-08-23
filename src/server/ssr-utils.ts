@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getServerAuthSession } from "./auth";
 
 export async function hasClaudeSessionBeenEstablished() {
@@ -8,4 +9,11 @@ export async function hasClaudeSessionBeenEstablished() {
     !!session?.user.framework &&
     !!session.user.stylingLibrary
   );
+}
+
+export async function getSessionOrRedirect() {
+  const session = await getServerAuthSession();
+  if (!session) {
+    redirect("/login");
+  }
 }

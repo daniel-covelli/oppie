@@ -3,6 +3,7 @@ import { claudeRouter } from "~/server/api/routers/claude/router";
 import { sessionRouter } from "./routers/session";
 import { folderRouter } from "./routers/folder";
 import { fileRouter } from "./routers/file";
+import { componentRouter } from "./routers/component";
 
 /**
  * This is the primary router for your server.
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   session: sessionRouter,
   folder: folderRouter,
   file: fileRouter,
+  component: componentRouter,
 });
 
 // export type definition of API

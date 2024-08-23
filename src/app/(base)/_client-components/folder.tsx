@@ -7,11 +7,8 @@ import Plus from "~/app/_components/svgs/plus";
 import DropDown from "~/app/_components/dropdown";
 import clsx from "clsx";
 import Options from "~/app/_components/svgs/options";
-import Modal, { HeadingModal } from "~/app/_components/modal";
-import Button from "~/app/_components/button";
 import Chevron from "~/app/_components/svgs/chevron";
-import { api } from "~/trpc/react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { MenuButton } from "@headlessui/react";
 import TrashSolid from "~/app/_components/svgs/trash-solid";
 import EditSolid from "~/app/_components/svgs/edit-solid";
@@ -19,54 +16,16 @@ import FolderPlus from "~/app/_components/svgs/folder-plus";
 import FilePlus from "~/app/_components/svgs/file-plus";
 import ActionWrapper from "~/app/_components/action-wrapper";
 import Link from "next/link";
-import FileIcon from "~/app/_components/svgs/file";
-import Loading from "~/app/_components/svgs/loading";
-
-interface FolderType {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  parentId: string | null;
-  ownerId: string;
-  children?: FolderType[];
-  files: { id: string; heading: { id: string; content: string } }[];
-  heading: {
-    id: string;
-    content: string;
-  };
-}
+import { useOpenAddTitleModal } from "~/app/_components/modal/add-title-modal";
+import { useOpenAlertModal } from "~/app/_components/modal/alert-modal";
+import Files from "./files";
+import { type FolderResponseType } from "~/definitions";
 
 function OptionsButton({ folderId }: { folderId: string }) {
-  const openState = useState(false);
-  const utils = api.useUtils();
-  const router = useRouter();
-  const deleteFolder = api.folder.deleteFolder.useMutation({
-    onSuccess: async () => {
-      await utils.folder.getFolders.invalidate();
-      router.push(`/`);
-    },
-  });
-
-  const handleDeleteFolder = async () => {
-    deleteFolder.mutate({
-      id: folderId,
-    });
-  };
+  const handleOpen = useOpenAlertModal();
 
   return (
     <>
-      <Modal
-        openState={openState}
-        footer={() => (
-          <Button as="button" color="danger" onClick={handleDeleteFolder}>
-            {deleteFolder.isPending ? (
-              <Loading className="size-4" />
-            ) : (
-              "I am Sure"
-            )}
-          </Button>
-        )}
-      />
       <DropDown
         menuButton={() => (
           <MenuButton
@@ -85,8 +44,7 @@ function OptionsButton({ folderId }: { folderId: string }) {
             component: () => (
               <button
                 onClick={(e) => {
-                  e.stopPropagation();
-                  openState[1](true);
+                  handleOpen(e, { type: "folder", folderId });
                 }}
                 className="flex w-full flex-row items-center gap-2 rounded p-1 leading-snug text-slate-200 hover:bg-slate-600"
               >
@@ -111,62 +69,10 @@ function OptionsButton({ folderId }: { folderId: string }) {
 }
 
 function AddButton({ folderId }: { folderId: string }) {
-  const utils = api.useUtils();
-  const router = useRouter();
-  const openState = useState(false);
-  const openFileModalState = useState(false);
-  const inputState = useState("");
-  const addFile = api.file.addFile.useMutation({
-    onSuccess: async (data) => {
-      await utils.folder.getFolders.invalidate();
-      openState[1](false);
-      router.push(`/document/${data.id}`);
-      setTimeout(() => {
-        inputState[1]("");
-      }, 1000);
-    },
-  });
-  const addFolder = api.folder.addFolder.useMutation({
-    onSuccess: async (data) => {
-      await utils.folder.getFolders.invalidate();
-      openState[1](false);
-      router.push(`/folder/${data.id}`);
-      setTimeout(() => {
-        inputState[1]("");
-      }, 1000);
-    },
-  });
-
-  const handleAddFolder = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!inputState[0]) return;
-    addFolder.mutate({
-      parentId: folderId,
-      heading: inputState[0],
-    });
-  };
-
-  const handleAddFile = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!inputState[0]) return;
-    addFile.mutate({
-      folderId: folderId,
-      heading: inputState[0],
-    });
-  };
+  const handleOpen = useOpenAddTitleModal();
 
   return (
     <>
-      <HeadingModal
-        openState={openState}
-        inputState={inputState}
-        onSubmit={handleAddFolder}
-      />
-      <HeadingModal
-        openState={openFileModalState}
-        inputState={inputState}
-        onSubmit={handleAddFile}
-      />
       <DropDown
         menuButton={() => (
           <MenuButton
@@ -184,10 +90,9 @@ function AddButton({ folderId }: { folderId: string }) {
             id: "Add folder",
             component: () => (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openState[1](true);
-                }}
+                onClick={(e) =>
+                  handleOpen(e, { type: "folder", parentId: folderId })
+                }
                 className="flex flex-1 flex-row items-center gap-2 rounded p-1 px-2 leading-snug text-slate-200 hover:bg-slate-600"
               >
                 <FolderPlus className="size-4 text-slate-400" />
@@ -199,10 +104,7 @@ function AddButton({ folderId }: { folderId: string }) {
             id: "Add document",
             component: () => (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openFileModalState[1](true);
-                }}
+                onClick={(e) => handleOpen(e, { type: "document", folderId })}
                 className="flex flex-1 flex-row items-center gap-2 rounded p-1 px-2 leading-snug text-slate-200 hover:bg-slate-600"
               >
                 <FilePlus className="size-4 text-slate-400" />
@@ -216,12 +118,13 @@ function AddButton({ folderId }: { folderId: string }) {
   );
 }
 
-export default function Folder({ folder }: { folder: FolderType }) {
-  const [opened, setOpened] = useState(false);
+export default function Folder({ folder }: { folder: FolderResponseType }) {
+  const [opened, setOpened] = useState(folder.isOpen);
   const pathname = usePathname();
 
   const hasChildren =
-    (folder.children && folder.children.length > 0) ??
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    (folder.children && folder.children.length > 0) ||
     (folder.files && folder.files.length > 0);
 
   return (
@@ -259,22 +162,13 @@ export default function Folder({ folder }: { folder: FolderType }) {
           {folder.heading.content}
         </Link>
       </ActionWrapper>
+
       {opened && hasChildren && (
         <div className="flex flex-col pl-5">
           {folder.children?.map((children) => (
             <Folder key={`${folder.id}${children.id}`} folder={children} />
           ))}
-          {folder.files?.map((file) => (
-            <ActionWrapper key={file.id} active={pathname.includes(file.id)}>
-              <Link
-                className="flex flex-1 flex-row items-center gap-3 truncate pl-1 text-left text-lg"
-                href={`/document/${file.id}`}
-              >
-                <FileIcon className="size-4" />
-                {file.heading.content}
-              </Link>
-            </ActionWrapper>
-          ))}
+          <Files files={folder.files} />
         </div>
       )}
     </>

@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
-import { getServerAuthSession } from "~/server/auth";
 import Button from "../_components/button";
 import { Message, SelectReactButton } from "./client-components";
 import React from "react";
@@ -8,7 +5,10 @@ import ReactIcon from "../_components/svgs/react";
 import Tag from "../_components/tag";
 import TailwindIcon from "../_components/svgs/tailwind";
 import TypescriptIcon from "../_components/svgs/typescript";
-import { hasClaudeSessionBeenEstablished } from "~/server/ssr-utils";
+import {
+  getSessionOrRedirect,
+  hasClaudeSessionBeenEstablished,
+} from "~/server/ssr-utils";
 
 export default async function Home() {
   await getSessionOrRedirect();
@@ -53,11 +53,4 @@ export default async function Home() {
       <Message />
     </div>
   );
-}
-
-async function getSessionOrRedirect() {
-  const session = await getServerAuthSession();
-  if (!session) {
-    redirect("/login");
-  }
 }

@@ -14,7 +14,12 @@ export const fileRouter = createTRPCRouter({
         data: {
           owner: { connect: { id: ctx.session.user.id } },
           folder: { connect: { id: input.folderId } },
-          heading: { create: { content: input.heading, type: "HEADING" } },
+          heading: {
+            create: {
+              content: input.heading,
+              type: "HEADING",
+            },
+          },
         },
       });
     }),
@@ -37,6 +42,20 @@ export const fileRouter = createTRPCRouter({
             where: { NOT: { position: null } },
             orderBy: { position: "asc" },
           },
+        },
+      });
+    }),
+
+  deleteFile: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.file.delete({
+        where: {
+          id: input.id,
         },
       });
     }),
