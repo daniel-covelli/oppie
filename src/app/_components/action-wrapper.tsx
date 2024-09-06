@@ -17,7 +17,7 @@ export default function ActionWrapper({
   return (
     <div
       className={clsx(
-        "flex h-8 flex-row items-center gap-2 rounded-lg p-1 pl-1.5 hover:cursor-pointer hover:bg-slate-700",
+        "flex h-8 flex-row items-center justify-center gap-2 rounded-lg p-1 pl-1.5 hover:cursor-pointer hover:bg-slate-700",
         active && "bg-slate-800",
         className,
       )}
@@ -27,7 +27,9 @@ export default function ActionWrapper({
       <Preface hovered={hovered} />
       {children}
       {hovered && Actions && (
-        <div className="flex flex-row items-center gap-1">{<Actions />}</div>
+        <div className="flex flex-row place-items-center content-center justify-center justify-items-center gap-1 self-center p-0">
+          {<Actions />}
+        </div>
       )}
     </div>
   );

@@ -20,7 +20,7 @@ export default async function Layout({
   const isSessionEstablished = await hasClaudeSessionBeenEstablished();
 
   const folders = await api.folder.getFolders();
-  void await api.folder.getFolders.prefetch();
+  void (await api.folder.getFolders.prefetch());
 
   return (
     <HydrateClient>

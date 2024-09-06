@@ -17,8 +17,3 @@ export interface FolderType {
   files: { id: string; heading: HeadingType }[];
   children: FolderType[];
 }
-
-export interface FolderResponseType extends FolderType {
-  isOpen: boolean;
-  children: FolderResponseType[];
-}

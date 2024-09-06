@@ -47,15 +47,16 @@ export const useTitleModalStore = create<State & Action>((set) => ({
 }));
 
 export const useOpenAddTitleModal = () => {
-  const { updateInputState, updateMetaDataState } = useTitleModalStore(
-    (state) => state,
-  );
+  const { updateInputState, updateMetaDataState, updateIsOpenState } =
+    useTitleModalStore((state) => state);
   const handleOpen = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    _: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     metaData: z.infer<typeof FolderDocumentSchema>,
   ) => {
+    console.log("OPPPPEENENENE");
     updateMetaDataState(metaData);
     updateInputState("");
+    updateIsOpenState(true);
   };
 
   return handleOpen;
