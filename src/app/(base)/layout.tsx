@@ -1,9 +1,9 @@
 import { api, HydrateClient } from "~/trpc/server";
-import BrandText from "../_components/brand-text";
+import BrandText from "../components/brand-text";
 import { HomeButton, SignOutButton } from "./client-components";
-import Button from "../_components/button";
+import Button from "../components/button";
 import { hasClaudeSessionBeenEstablished } from "~/server/ssr-utils";
-import Chevron from "../_components/svgs/chevron";
+import Chevron from "../components/svgs/chevron";
 
 import Link from "next/link";
 import Folders from "./_client-components/folders";
@@ -57,7 +57,7 @@ export default async function Layout({
             </div>
           </header>
           <main className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-800">
-            <div className="mx-auto max-w-7xl px-6 py-8">{children}</div>
+            <div className="mx-auto max-w-5xl px-6 py-8">{children}</div>
           </main>
         </div>
       </div>

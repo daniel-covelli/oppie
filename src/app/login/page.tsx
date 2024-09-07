@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "~/server/auth";
 
 import Link from "next/link";
-import BrandText from "../_components/brand-text";
+import BrandText from "../components/brand-text";
 import { LoginButton, Typing } from "./client-components";
 
 export default async function Login() {

@@ -8,36 +8,54 @@ import Options from "./svgs/options";
 import { useOpenAlertModal } from "./modal/alert-modal";
 import TrashSolid from "./svgs/trash-solid";
 import EditSolid from "./svgs/edit-solid";
+import React from "react";
 
 export default function DropDown({
-  menuButton: MenuButton,
+  buttonIcon: ButtonIcon,
   options,
+  shouldButtonDisapearOnOpen = false,
+  title,
 }: {
-  menuButton: React.ComponentType;
+  buttonIcon: React.ComponentType;
   options: {
     id: string;
-    component: React.ComponentType;
+    component: React.ComponentType<{ close: () => void }>;
   }[];
+  shouldButtonDisapearOnOpen?: boolean;
+  title?: string;
 }) {
   return (
-    <div className="relative flex">
-      <Menu>
-        <MenuButton />
-        <MenuItems
-          transition
-          anchor={{ to: "bottom start", gap: "4px" }}
-          className="w-fit origin-top-right rounded border border-slate-600 bg-slate-700 p-2 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
-        >
-          <div className="flex flex-col gap-1">
-            {options.map(({ id, component: Component }) => (
-              <MenuItem key={id}>
-                <Component />
-              </MenuItem>
-            ))}
-          </div>
-        </MenuItems>
-      </Menu>
-    </div>
+    <Menu as="div" className="mb-0! relative inline-block">
+      {({ open, close }) => (
+        <>
+          <MenuButton
+            className={clsx(
+              open && shouldButtonDisapearOnOpen && "opacity-0",
+              "inline-flex rounded p-1 text-slate-300 hover:bg-slate-600",
+              "data-[active]:bg-slate-600",
+            )}
+          >
+            <ButtonIcon />
+          </MenuButton>
+          <MenuItems
+            transition
+            anchor={{ to: "top start", gap: "2px", padding: "100px" }}
+            className="origin-center rounded border border-slate-600 bg-slate-700 p-2 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+          >
+            <div className="flex flex-col gap-1">
+              {title && (
+                <p className="pb-1 pl-2 text-xs text-gray-300">{title}</p>
+              )}
+              {options.map(({ id, component: Component }) => (
+                <MenuItem as={"div"} key={id} className="flex">
+                  <Component close={close} />
+                </MenuItem>
+              ))}
+            </div>
+          </MenuItems>
+        </>
+      )}
+    </Menu>
   );
 }
 
@@ -47,17 +65,7 @@ export function AddButton({ folderId }: { folderId: string }) {
   return (
     <>
       <DropDown
-        menuButton={() => (
-          <MenuButton
-            onClick={(e) => e.stopPropagation()}
-            className={clsx(
-              "mb-0 rounded p-1 text-slate-300 hover:bg-slate-600",
-              "data-[active]:bg-slate-600",
-            )}
-          >
-            <Plus className="size-4" />
-          </MenuButton>
-        )}
+        buttonIcon={() => <Plus className="size-4" />}
         options={[
           {
             id: "Add folder",
@@ -97,17 +105,7 @@ export function OptionsButton({ folderId }: { folderId: string }) {
   return (
     <>
       <DropDown
-        menuButton={() => (
-          <MenuButton
-            onClick={(e) => e.stopPropagation()}
-            className={clsx(
-              "mb-0 rounded p-1 text-slate-300 hover:bg-slate-600",
-              "data-[active]:bg-slate-600",
-            )}
-          >
-            <Options className="size-4" />
-          </MenuButton>
-        )}
+        buttonIcon={() => <Options className="size-4" />}
         options={[
           {
             id: "Delete",

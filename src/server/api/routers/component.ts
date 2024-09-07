@@ -2,33 +2,29 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { ComponentTypes } from "@prisma/client";
 
+const upsertComponentInputSchema = z
+  .object({
+    type: z
+      .enum([ComponentTypes.BODY, ComponentTypes.CODE, ComponentTypes.HEADING])
+      .optional(),
+    content: z.string().optional(),
+    fileId: z.string().nullable(),
+    position: z.number().optional(),
+    id: z.string().optional(),
+  })
+  .refine(
+    (val) => {
+      if (!val.id) {
+        return val.fileId;
+      }
+      return true;
+    },
+    { message: "Invalid arguments for creating a component" },
+  );
+
 export const componentRouter = createTRPCRouter({
   upsertComponent: protectedProcedure
-    .input(
-      z
-        .object({
-          type: z
-            .enum([
-              ComponentTypes.BODY,
-              ComponentTypes.CODE,
-              ComponentTypes.HEADING,
-            ])
-            .optional(),
-          content: z.string().optional(),
-          fileId: z.string().nullable(),
-          position: z.number().optional(),
-          id: z.string().optional(),
-        })
-        .refine(
-          (val) => {
-            if (!val.id) {
-              return val.content && val.fileId;
-            }
-            return true;
-          },
-          { message: "Invalid arguments for creating a component" },
-        ),
-    )
+    .input(upsertComponentInputSchema)
     .mutation(async ({ ctx, input }) => {
       let nextPosition: null | number = null;
       if (!input.id) {
@@ -38,12 +34,11 @@ export const componentRouter = createTRPCRouter({
             _max: { position: true },
           })
         )._max.position;
-        console.log(next);
         nextPosition = next === null ? 1 : next + 1;
       }
 
       return ctx.db.component.upsert({
-        where: { id: input.id },
+        where: { id: input.id ?? "" },
         update: {
           type: input.type,
           content: input.content,

@@ -120,7 +120,7 @@ enum ComponentTypes {
 
 model Component {
     id      String @id @default(uuid())
-    content String
+    content String?
 
     position Int?
     type     ComponentTypes @default(BODY)

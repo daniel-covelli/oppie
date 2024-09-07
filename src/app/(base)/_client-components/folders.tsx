@@ -2,12 +2,12 @@
 import { api, type RouterOutputs } from "~/trpc/react";
 
 import Folder from "./folder";
-import ActionWrapper from "~/app/_components/action-wrapper";
-import Plus from "~/app/_components/svgs/plus";
+import ActionWrapper from "~/app/components/action-wrapper";
+import Plus from "~/app/components/svgs/plus";
 import AddTitleModal, {
   useOpenAddTitleModal,
-} from "~/app/_components/modal/add-title-modal";
-import AlertModal from "~/app/_components/modal/alert-modal";
+} from "~/app/components/modal/add-title-modal";
+import AlertModal from "~/app/components/modal/alert-modal";
 
 export default function Folders({
   initialFolders,

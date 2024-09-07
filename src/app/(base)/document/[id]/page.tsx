@@ -1,5 +1,5 @@
 import { getSessionOrRedirect } from "~/server/ssr-utils";
-import FileContent from "./_client-components";
+import FileContent from "./components/_client-components";
 import { api } from "~/trpc/server";
 
 export default async function File({ params }: { params: { id: string } }) {

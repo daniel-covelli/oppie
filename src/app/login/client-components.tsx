@@ -1,8 +1,8 @@
 "use client";
 
 import { signIn, type ClientSafeProvider } from "next-auth/react";
-import Button from "../_components/button";
-import Google from "../_components/svgs/google";
+import Button from "../components/button";
+import Google from "../components/svgs/google";
 import { TypeAnimation } from "react-type-animation";
 
 export function LoginButton({ provider }: { provider: ClientSafeProvider }) {

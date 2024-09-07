@@ -1,15 +1,15 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import Button from "../_components/button";
+import Button from "../components/button";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, type MouseEventHandler, useState } from "react";
 import { tsxLanguage } from "@codemirror/lang-javascript";
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { ResponseType } from "~/definitions";
-import HomeSolid from "../_components/svgs/home-solid";
-import Interactive from "../_components/interactive";
+import HomeSolid from "../components/svgs/home-solid";
+import Interactive from "../components/interactive";
 import { myTheme } from "../_configs";
 
 export function SignOutButton() {

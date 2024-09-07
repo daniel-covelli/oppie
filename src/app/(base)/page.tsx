@@ -1,10 +1,10 @@
-import Button from "../_components/button";
+import Button from "../components/button";
 import { Message, SelectReactButton } from "./client-components";
 import React from "react";
-import ReactIcon from "../_components/svgs/react";
-import Tag from "../_components/tag";
-import TailwindIcon from "../_components/svgs/tailwind";
-import TypescriptIcon from "../_components/svgs/typescript";
+import ReactIcon from "../components/svgs/react";
+import Tag from "../components/tag";
+import TailwindIcon from "../components/svgs/tailwind";
+import TypescriptIcon from "../components/svgs/typescript";
 import {
   getSessionOrRedirect,
   hasClaudeSessionBeenEstablished,

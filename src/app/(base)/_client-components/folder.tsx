@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import FolderClosed from "~/app/_components/svgs/folder-closed";
-import FolderOpenSolid from "~/app/_components/svgs/folder-open-solid";
-import { AddButton, OptionsButton } from "~/app/_components/dropdown";
-import Chevron from "~/app/_components/svgs/chevron";
+import FolderClosed from "~/app/components/svgs/folder-closed";
+import FolderOpenSolid from "~/app/components/svgs/folder-open-solid";
+
+import Chevron from "~/app/components/svgs/chevron";
 import { usePathname } from "next/navigation";
-import ActionWrapper from "~/app/_components/action-wrapper";
+import ActionWrapper from "~/app/components/action-wrapper";
 import Link from "next/link";
 import Files from "./files";
 import { type RouterOutputs } from "~/trpc/react";
+import { AddButton, OptionsButton } from "~/app/components/dropdown";
 
 type RecursiveFolderProps = Omit<
   RouterOutputs["folder"]["getFolders"][0],

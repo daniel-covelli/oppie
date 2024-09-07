@@ -1,11 +1,11 @@
 import { usePathname } from "next/navigation";
 import { type FolderType } from "./folder";
-import { useOpenAlertModal } from "~/app/_components/modal/alert-modal";
-import ActionWrapper from "~/app/_components/action-wrapper";
+import { useOpenAlertModal } from "~/app/components/modal/alert-modal";
+import ActionWrapper from "~/app/components/action-wrapper";
 import clsx from "clsx";
-import TrashSolid from "~/app/_components/svgs/trash-solid";
+import TrashSolid from "~/app/components/svgs/trash-solid";
 import Link from "next/link";
-import FileIcon from "~/app/_components/svgs/file";
+import FileIcon from "~/app/components/svgs/file";
 
 export default function Files({ files }: { files: FolderType["files"] }) {
   const pathname = usePathname();
