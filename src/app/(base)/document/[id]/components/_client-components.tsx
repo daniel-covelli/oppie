@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import {
+  type FormEvent,
   Fragment,
   type PropsWithChildren,
   useEffect,
@@ -21,6 +22,9 @@ import IconButton from "~/app/components/icon-button";
 import { Dialog, DialogPanel, DialogTitle, Input } from "@headlessui/react";
 import Submit from "~/app/components/svgs/submit";
 import Button from "~/app/components/button";
+import { tsxLanguage } from "@codemirror/lang-javascript";
+import CodeMirror, { EditorView } from "@uiw/react-codemirror";
+import { myTheme } from "~/app/_configs";
 
 type ComponentType = RouterOutputs["file"]["getFile"]["heading"];
 
@@ -107,32 +111,65 @@ export default function FileContent({
     manageNewComponent(data);
   };
 
+  const { mutateAsync, error } = api.claude.getMessage.useMutation();
+
+  const [submitted, setSubmitted] = useState(false);
+  const [input, setInput] = useState("");
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!input) return;
+    setSubmitted(true);
+    const data = await mutateAsync({ input });
+    const component = await upsertComponent.mutateAsync({
+      fileId: file.id,
+      type: "CODE",
+      content: data.message,
+    });
+
+    manageNewComponent(component);
+  };
+
   return (
     <div className="relative flex flex-col gap-1">
       <InlineWrapper colWidth={23}>
         <InlineInput handleUpsert={handleUpdate} component={file.heading} />
       </InlineWrapper>
-      {components.map((component, index) => (
-        <InlineWrapper
-          key={component.id}
-          cta={() => (
-            <IconButton
-              onClick={() => {
-                deleteComponent.mutate({ id: component.id });
-                manageDeleteComponent(component.id);
-              }}
-            >
-              <TrashSolid className="size-4" />
-            </IconButton>
-          )}
-        >
-          <InlineInput
-            ref={index === components.length - 1 ? lastComponentRef : undefined}
-            handleUpsert={handleUpdate}
-            component={component}
-          />
-        </InlineWrapper>
-      ))}
+      {components.map((component, index) => {
+        return (
+          <InlineWrapper
+            key={component.id}
+            cta={() => (
+              <IconButton
+                onClick={() => {
+                  deleteComponent.mutate({ id: component.id });
+                  manageDeleteComponent(component.id);
+                }}
+              >
+                <TrashSolid className="size-4" />
+              </IconButton>
+            )}
+          >
+            {component.type === "CODE" ? (
+              <CodeMirror
+                key={component.id}
+                id="code-block"
+                readOnly
+                value={component.content ?? ""}
+                extensions={[tsxLanguage, EditorView.lineWrapping]}
+                theme={myTheme}
+              />
+            ) : (
+              <InlineInput
+                ref={
+                  index === components.length - 1 ? lastComponentRef : undefined
+                }
+                handleUpsert={handleUpdate}
+                component={component}
+              />
+            )}
+          </InlineWrapper>
+        );
+      })}
 
       <InlineWrapper
         cta={() => <AddBlock fileId={file.id} onClick={handleAdd} />}
@@ -161,13 +198,15 @@ export default function FileContent({
           <DialogTitle className={"pb-1 text-xs text-slate-200"}>
             What code would you like to generate?
           </DialogTitle>
-          <form className="flex flex-row">
+          <form className="flex flex-row" onSubmit={onSubmit}>
             <Input
               autoFocus
               className={clsx(
                 `w-full bg-transparent text-lg focus:outline-none`,
               )}
               placeholder="Generate me a..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
             />
             <Button type="submit" variant="filled" color="secondary">
               <Submit className="size-4" />
