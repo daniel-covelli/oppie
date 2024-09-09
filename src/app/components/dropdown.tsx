@@ -8,7 +8,7 @@ import Options from "./svgs/options";
 import { useOpenAlertModal } from "./modal/alert-modal";
 import TrashSolid from "./svgs/trash-solid";
 import EditSolid from "./svgs/edit-solid";
-import React, { Fragment } from "react";
+import React from "react";
 import IconButton from "./icon-button";
 
 export default function DropDown({
@@ -26,36 +26,38 @@ export default function DropDown({
   title?: string;
 }) {
   return (
-    <Menu as="div" className="mb-0! relative inline-block">
-      {({ open, close }) => (
-        <>
-          <MenuButton as={Fragment}>
-            <IconButton
-              className={clsx(
-                open && shouldButtonDisapearOnOpen && "opcaity-0",
-              )}
+    <Menu as="div" className="relative inline-block">
+      {({ open, close }) => {
+        return (
+          <>
+            <MenuButton as="div">
+              <IconButton
+                className={clsx(
+                  open && shouldButtonDisapearOnOpen && "opacity-0",
+                )}
+              >
+                <Icon />
+              </IconButton>
+            </MenuButton>
+            <MenuItems
+              transition
+              anchor={{ to: "top start", gap: "2px", padding: "100px" }}
+              className="origin-center rounded border border-slate-600 bg-slate-700 p-2 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
             >
-              <Icon />
-            </IconButton>
-          </MenuButton>
-          <MenuItems
-            transition
-            anchor={{ to: "top start", gap: "2px", padding: "100px" }}
-            className="origin-center rounded border border-slate-600 bg-slate-700 p-2 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
-          >
-            <div className="flex flex-col gap-1">
-              {title && (
-                <p className="pb-1 pl-2 text-xs text-gray-300">{title}</p>
-              )}
-              {options.map(({ id, component: Component }) => (
-                <MenuItem as={"div"} key={id} className="flex">
-                  <Component close={close} />
-                </MenuItem>
-              ))}
-            </div>
-          </MenuItems>
-        </>
-      )}
+              <div className="flex flex-col gap-1">
+                {title && (
+                  <p className="pb-1 pl-2 text-xs text-gray-300">{title}</p>
+                )}
+                {options.map(({ id, component: Component }) => (
+                  <MenuItem as={"div"} key={id} className="flex">
+                    <Component close={close} />
+                  </MenuItem>
+                ))}
+              </div>
+            </MenuItems>
+          </>
+        );
+      }}
     </Menu>
   );
 }

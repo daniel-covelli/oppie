@@ -18,6 +18,9 @@ import Code from "~/app/components/svgs/code";
 import HeadingIcon from "~/app/components/svgs/heading";
 import TrashSolid from "~/app/components/svgs/trash-solid";
 import IconButton from "~/app/components/icon-button";
+import { Dialog, DialogPanel, DialogTitle, Input } from "@headlessui/react";
+import Submit from "~/app/components/svgs/submit";
+import Button from "~/app/components/button";
 
 type ComponentType = RouterOutputs["file"]["getFile"]["heading"];
 
@@ -83,16 +86,29 @@ export default function FileContent({
     upsertComponent.mutate(args);
   };
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0, r: 0 });
+  const positionRef = useRef<HTMLParagraphElement>(null);
+
   const handleAdd = async (
     args: RouterInputs["component"]["upsertComponent"],
   ) => {
+    if (args.type === "CODE") {
+      const rect = positionRef.current?.getBoundingClientRect();
+      setPosition({
+        x: rect?.left ?? 0,
+        r: rect?.right ?? 0,
+        y: rect?.bottom ?? 0 + window.scrollY,
+      });
+      return setIsOpen(true);
+    }
     const data = await upsertComponent.mutateAsync(args);
 
     manageNewComponent(data);
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="relative flex flex-col gap-1">
       <InlineWrapper colWidth={23}>
         <InlineInput handleUpsert={handleUpdate} component={file.heading} />
       </InlineWrapper>
@@ -121,8 +137,44 @@ export default function FileContent({
       <InlineWrapper
         cta={() => <AddBlock fileId={file.id} onClick={handleAdd} />}
       >
-        <p className="text-slate-500">Add a component</p>
+        <p ref={positionRef} className="text-slate-500">
+          Add a component
+        </p>
       </InlineWrapper>
+
+      <Dialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        transition
+        className="fixed inset-0 z-10 w-screen overflow-y-auto"
+      >
+        <DialogPanel
+          transition
+          className="data-[closed]:transform-[scale(95%)] z-20 rounded border border-slate-600 bg-slate-750 p-2 duration-75 ease-out data-[closed]:opacity-0"
+          style={{
+            position: "absolute",
+            left: `${position.x}px`,
+            top: `${position.y - 20}px`,
+            width: `${position.r - position.x}px`,
+          }}
+        >
+          <DialogTitle className={"pb-1 text-xs text-slate-200"}>
+            What code would you like to generate?
+          </DialogTitle>
+          <form className="flex flex-row">
+            <Input
+              autoFocus
+              className={clsx(
+                `w-full bg-transparent text-lg focus:outline-none`,
+              )}
+              placeholder="Generate me a..."
+            />
+            <Button type="submit" variant="filled" color="secondary">
+              <Submit className="size-4" />
+            </Button>
+          </form>
+        </DialogPanel>
+      </Dialog>
     </div>
   );
 }
@@ -144,9 +196,12 @@ function AddBlock({
       options={[
         {
           id: "code",
-          component: () => (
+          component: ({ close }) => (
             <Tile
-              onClick={async () => onClick({ fileId, type: "CODE" })}
+              onClick={async () => {
+                close();
+                await onClick({ fileId, type: "CODE" });
+              }}
               icon={<Code className="size-5" />}
               title={"Code"}
               description={"Build a code block with AI"}
@@ -199,13 +254,13 @@ function InlineWrapper({
   return (
     <div
       className={clsx(
-        "grid items-center gap-3",
+        "grid content-center gap-3",
         `grid-cols-[${colWidth}px_auto]`,
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={clsx(!isHovered && "opacity-0", "justify-center")}>
+      <div className={clsx(!isHovered && "opacity-0")}>
         <Cta />
       </div>
       <div>{children}</div>

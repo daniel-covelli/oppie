@@ -42,7 +42,7 @@ const CustomButton = <T extends ElementType = "button">({
           filled: {
             primary: "bg-slate-600 text-slate-50 hover:bg-slate-500",
             secondary:
-              "bg-sky-600 text-slate-50 hover:bg-sky-700 disabled:bg-sky-800 disabled:text-slate-400",
+              "bg-blue-600 text-slate-50 hover:bg-blue-700 disabled:bg-blue-800 disabled:text-slate-400",
             success: "bg-green-500 text-slate-50 hover:bg-green-600",
             danger: "bg-red-700 text-slate-200 hover:bg-red-800",
             special: "",

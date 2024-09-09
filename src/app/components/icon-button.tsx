@@ -9,9 +9,9 @@ function IconButton({
   return (
     <button
       className={clsx(
-        className,
-        "inline-flex rounded p-1 text-slate-300 hover:bg-slate-600",
+        "mb-0 rounded p-1 text-slate-300 hover:bg-slate-600",
         "data-[active]:bg-slate-600",
+        className,
       )}
       {...rest}
     >
