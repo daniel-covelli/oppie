@@ -53,7 +53,6 @@ export const useOpenAddTitleModal = () => {
     _: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     metaData: z.infer<typeof FolderDocumentSchema>,
   ) => {
-    console.log("OPPPPEENENENE");
     updateMetaDataState(metaData);
     updateInputState("");
     updateIsOpenState(true);

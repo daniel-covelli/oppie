@@ -24,7 +24,7 @@ export default async function Layout({
 
   return (
     <HydrateClient>
-      <div className="flex h-screen">
+      <div className="flex min-h-screen">
         <aside className="w-64 bg-slate-750 shadow-xl">
           <div className="px-3.5 py-4">
             <BrandText as={Link} href={"/"} className="text-3xl">

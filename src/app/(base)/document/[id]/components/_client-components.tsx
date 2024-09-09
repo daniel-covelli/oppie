@@ -19,12 +19,10 @@ import Code from "~/app/components/svgs/code";
 import HeadingIcon from "~/app/components/svgs/heading";
 import TrashSolid from "~/app/components/svgs/trash-solid";
 import IconButton from "~/app/components/icon-button";
-import { Dialog, DialogPanel, DialogTitle, Input } from "@headlessui/react";
-import Submit from "~/app/components/svgs/submit";
-import Button from "~/app/components/button";
 import { tsxLanguage } from "@codemirror/lang-javascript";
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { myTheme } from "~/app/_configs";
+import PromptModal, { usePromptModal } from "./prompt-modal";
 
 type ComponentType = RouterOutputs["file"]["getFile"]["heading"];
 
@@ -70,6 +68,8 @@ export default function FileContent({
     manageDeleteComponent,
     lastComponentRef,
   } = useComponentFocusHandler(file.components);
+  const { handleOpenModal, positionRef } = usePromptModal();
+  const [input, setInput] = useState("");
 
   const utils = api.useUtils();
   const upsertComponent = api.component.upsertComponent.useMutation({
@@ -90,22 +90,13 @@ export default function FileContent({
     upsertComponent.mutate(args);
   };
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0, r: 0 });
-  const positionRef = useRef<HTMLParagraphElement>(null);
-
   const handleAdd = async (
     args: RouterInputs["component"]["upsertComponent"],
   ) => {
     if (args.type === "CODE") {
-      const rect = positionRef.current?.getBoundingClientRect();
-      setPosition({
-        x: rect?.left ?? 0,
-        r: rect?.right ?? 0,
-        y: rect?.bottom ?? 0 + window.scrollY,
-      });
-      return setIsOpen(true);
+      return handleOpenModal();
     }
+
     const data = await upsertComponent.mutateAsync(args);
 
     manageNewComponent(data);
@@ -114,7 +105,7 @@ export default function FileContent({
   const { mutateAsync, error } = api.claude.getMessage.useMutation();
 
   const [submitted, setSubmitted] = useState(false);
-  const [input, setInput] = useState("");
+
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input) return;
@@ -130,7 +121,7 @@ export default function FileContent({
   };
 
   return (
-    <div className="relative flex flex-col gap-1">
+    <div className="mb-40 flex flex-col gap-1">
       <InlineWrapper colWidth={23}>
         <InlineInput handleUpsert={handleUpdate} component={file.heading} />
       </InlineWrapper>
@@ -179,41 +170,7 @@ export default function FileContent({
         </p>
       </InlineWrapper>
 
-      <Dialog
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
-        transition
-        className="fixed inset-0 z-10 w-screen overflow-y-auto"
-      >
-        <DialogPanel
-          transition
-          className="data-[closed]:transform-[scale(95%)] z-20 rounded border border-slate-600 bg-slate-750 p-2 duration-75 ease-out data-[closed]:opacity-0"
-          style={{
-            position: "absolute",
-            left: `${position.x}px`,
-            top: `${position.y - 20}px`,
-            width: `${position.r - position.x}px`,
-          }}
-        >
-          <DialogTitle className={"pb-1 text-xs text-slate-200"}>
-            What code would you like to generate?
-          </DialogTitle>
-          <form className="flex flex-row" onSubmit={onSubmit}>
-            <Input
-              autoFocus
-              className={clsx(
-                `w-full bg-transparent text-lg focus:outline-none`,
-              )}
-              placeholder="Generate me a..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-            />
-            <Button type="submit" variant="filled" color="secondary">
-              <Submit className="size-4" />
-            </Button>
-          </form>
-        </DialogPanel>
-      </Dialog>
+      <PromptModal onSubmit={onSubmit} input={input} setInput={setInput} />
     </div>
   );
 }
