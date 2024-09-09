@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FolderClosed from "~/app/components/svgs/folder-closed";
 import FolderOpenSolid from "~/app/components/svgs/folder-open-solid";
 
@@ -19,26 +19,62 @@ type RecursiveFolderProps = Omit<
   children: RecursiveFolderProps[];
 };
 
-export default function Folder({ folder }: { folder: RecursiveFolderProps }) {
+const useFolderStateManager = (folder: RecursiveFolderProps) => {
   const [opened, setOpened] = useState(false);
   const pathname = usePathname();
+
+  const handleShouldOpen = useCallback(
+    (pathname: string, folder: RecursiveFolderProps): boolean => {
+      if (pathname.includes(folder.id)) {
+        setOpened(true);
+        return true;
+      }
+      if (folder.children.length > 0 || folder.files.length > 0) {
+        const shouldOpen =
+          folder.children.some((child) => handleShouldOpen(pathname, child)) ||
+          folder.files.some((child) => pathname.includes(child.id));
+
+        if (shouldOpen) {
+          setOpened(true);
+        }
+        return shouldOpen;
+      } else {
+        setOpened(false);
+        return false;
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    handleShouldOpen(pathname, folder);
+  }, [folder, handleShouldOpen, pathname]);
 
   const hasChildren =
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     (folder.children && folder.children.length > 0) ||
     (folder.files && folder.files.length > 0);
 
+  return {
+    opened,
+    isActive: pathname.includes(folder.id),
+    hasChildren,
+    handleToggle: () => setOpened((prev) => (hasChildren ? !prev : prev)),
+  };
+};
+
+export default function Folder({ folder }: { folder: RecursiveFolderProps }) {
+  const { opened, isActive, hasChildren, handleToggle } =
+    useFolderStateManager(folder);
+
   return (
     <>
       <ActionWrapper
-        active={pathname.includes(folder.id)}
+        active={isActive}
         preface={({ hovered }) => (
           <button
             className="rounded p-1 hover:bg-slate-600"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpened((prev) => (hasChildren ? !prev : prev));
-            }}
+            onClick={() => handleToggle()}
           >
             {hovered && hasChildren ? (
               <Chevron className="size-4 -rotate-90 p-0.5 text-slate-300" />
@@ -49,10 +85,18 @@ export default function Folder({ folder }: { folder: RecursiveFolderProps }) {
             )}
           </button>
         )}
-        actions={() => (
+        actions={({ setHovered, setIgnoreMouseOut }) => (
           <>
-            <OptionsButton folderId={folder.id} />
-            <AddButton folderId={folder.id} />
+            <OptionsButton
+              folderId={folder.id}
+              setHovered={setHovered}
+              setIgnoreMouseOut={setIgnoreMouseOut}
+            />
+            <AddButton
+              folderId={folder.id}
+              setHovered={setHovered}
+              setIgnoreMouseOut={setIgnoreMouseOut}
+            />
           </>
         )}
       >

@@ -8,14 +8,18 @@ import Options from "./svgs/options";
 import { useOpenAlertModal } from "./modal/alert-modal";
 import TrashSolid from "./svgs/trash-solid";
 import EditSolid from "./svgs/edit-solid";
-import React from "react";
+import React, { type Dispatch, type SetStateAction } from "react";
 import IconButton from "./icon-button";
+
+const dummyDispatch: Dispatch<SetStateAction<boolean>> = (value) => undefined;
 
 export default function DropDown({
   icon: Icon,
   options,
   shouldButtonDisapearOnOpen = false,
   title,
+  setIgnoreMouseOut = dummyDispatch,
+  setHovered = dummyDispatch,
 }: {
   icon: React.ComponentType;
   options: {
@@ -24,20 +28,23 @@ export default function DropDown({
   }[];
   shouldButtonDisapearOnOpen?: boolean;
   title?: string;
+  setIgnoreMouseOut?: Dispatch<SetStateAction<boolean>>;
+  setHovered?: Dispatch<SetStateAction<boolean>>;
 }) {
   return (
-    <Menu as="div" className="relative inline-block">
+    <Menu as="div" className="relative flex">
       {({ open, close }) => {
         return (
           <>
-            <MenuButton as="div">
-              <IconButton
-                className={clsx(
-                  open && shouldButtonDisapearOnOpen && "opacity-0",
-                )}
-              >
-                <Icon />
-              </IconButton>
+            <MenuButton
+              as={IconButton}
+              className={clsx(
+                open && shouldButtonDisapearOnOpen && "opacity-0",
+                "mb-0!",
+              )}
+              onClick={() => setIgnoreMouseOut(true)}
+            >
+              <Icon />
             </MenuButton>
             <MenuItems
               transition
@@ -50,7 +57,11 @@ export default function DropDown({
                 )}
                 {options.map(({ id, component: Component }) => (
                   <MenuItem as={"div"} key={id} className="flex">
-                    <Component close={close} />
+                    <Component
+                      close={() => {
+                        close();
+                      }}
+                    />
                   </MenuItem>
                 ))}
               </div>
@@ -62,21 +73,34 @@ export default function DropDown({
   );
 }
 
-export function AddButton({ folderId }: { folderId: string }) {
+interface FolderTriggerProps {
+  folderId: string;
+  setHovered: Dispatch<SetStateAction<boolean>>;
+  setIgnoreMouseOut: Dispatch<SetStateAction<boolean>>;
+}
+
+export function AddButton({
+  folderId,
+  setHovered,
+  setIgnoreMouseOut,
+}: FolderTriggerProps) {
   const handleOpen = useOpenAddTitleModal();
 
   return (
     <>
       <DropDown
+        setIgnoreMouseOut={setIgnoreMouseOut}
         icon={() => <Plus className="size-4" />}
         options={[
           {
             id: "Add folder",
             component: () => (
               <button
-                onClick={(e) =>
-                  handleOpen(e, { type: "folder", parentId: folderId })
-                }
+                onClick={(e) => {
+                  handleOpen(e, { type: "folder", parentId: folderId });
+                  setHovered(false);
+                  setIgnoreMouseOut(false);
+                }}
                 className="flex flex-1 flex-row items-center gap-2 rounded p-1 px-2 leading-snug text-slate-200 hover:bg-slate-600"
               >
                 <FolderPlus className="size-4 text-slate-400" />
@@ -88,7 +112,11 @@ export function AddButton({ folderId }: { folderId: string }) {
             id: "Add document",
             component: () => (
               <button
-                onClick={(e) => handleOpen(e, { type: "document", folderId })}
+                onClick={(e) => {
+                  handleOpen(e, { type: "document", folderId });
+                  setHovered(false);
+                  setIgnoreMouseOut(false);
+                }}
                 className="flex flex-1 flex-row items-center gap-2 rounded p-1 px-2 leading-snug text-slate-200 hover:bg-slate-600"
               >
                 <FilePlus className="size-4 text-slate-400" />
@@ -102,12 +130,17 @@ export function AddButton({ folderId }: { folderId: string }) {
   );
 }
 
-export function OptionsButton({ folderId }: { folderId: string }) {
+export function OptionsButton({
+  folderId,
+  setHovered,
+  setIgnoreMouseOut,
+}: FolderTriggerProps) {
   const handleOpen = useOpenAlertModal();
 
   return (
     <>
       <DropDown
+        setIgnoreMouseOut={setIgnoreMouseOut}
         icon={() => <Options className="size-4" />}
         options={[
           {
@@ -116,6 +149,7 @@ export function OptionsButton({ folderId }: { folderId: string }) {
               <button
                 onClick={(e) => {
                   handleOpen(e, { type: "folder", folderId });
+                  setHovered(false);
                 }}
                 className="flex w-full flex-row items-center gap-2 rounded p-1 leading-snug text-slate-200 hover:bg-slate-600"
               >

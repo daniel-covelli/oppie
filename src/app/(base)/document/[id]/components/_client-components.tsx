@@ -68,7 +68,7 @@ export default function FileContent({
     manageDeleteComponent,
     lastComponentRef,
   } = useComponentFocusHandler(file.components);
-  const { handleOpenModal, positionRef } = usePromptModal();
+  const { handleOpenModal, positionRef, updateIsOpen } = usePromptModal();
   const [input, setInput] = useState("");
 
   const utils = api.useUtils();
@@ -116,62 +116,71 @@ export default function FileContent({
       type: "CODE",
       content: data.message,
     });
-
+    updateIsOpen(false);
+    setSubmitted(true);
     manageNewComponent(component);
   };
 
   return (
-    <div className="mb-40 flex flex-col gap-1">
-      <InlineWrapper colWidth={23}>
-        <InlineInput handleUpsert={handleUpdate} component={file.heading} />
-      </InlineWrapper>
-      {components.map((component, index) => {
-        return (
-          <InlineWrapper
-            key={component.id}
-            cta={() => (
-              <IconButton
-                onClick={() => {
-                  deleteComponent.mutate({ id: component.id });
-                  manageDeleteComponent(component.id);
-                }}
-              >
-                <TrashSolid className="size-4" />
-              </IconButton>
-            )}
-          >
-            {component.type === "CODE" ? (
-              <CodeMirror
-                key={component.id}
-                id="code-block"
-                readOnly
-                value={component.content ?? ""}
-                extensions={[tsxLanguage, EditorView.lineWrapping]}
-                theme={myTheme}
-              />
-            ) : (
-              <InlineInput
-                ref={
-                  index === components.length - 1 ? lastComponentRef : undefined
-                }
-                handleUpsert={handleUpdate}
-                component={component}
-              />
-            )}
-          </InlineWrapper>
-        );
-      })}
+    <>
+      <div className="mb-40 flex flex-col gap-1">
+        <InlineWrapper>
+          <InlineInput handleUpsert={handleUpdate} component={file.heading} />
+        </InlineWrapper>
+        {components.map((component, index) => {
+          return (
+            <InlineWrapper
+              key={component.id}
+              cta={() => (
+                <IconButton
+                  onClick={() => {
+                    deleteComponent.mutate({ id: component.id });
+                    manageDeleteComponent(component.id);
+                  }}
+                >
+                  <TrashSolid className="size-4" />
+                </IconButton>
+              )}
+            >
+              {component.type === "CODE" ? (
+                <CodeMirror
+                  key={component.id}
+                  id="code-block"
+                  readOnly
+                  value={component.content ?? ""}
+                  extensions={[tsxLanguage, EditorView.lineWrapping]}
+                  theme={myTheme}
+                />
+              ) : (
+                <InlineInput
+                  ref={
+                    index === components.length - 1
+                      ? lastComponentRef
+                      : undefined
+                  }
+                  handleUpsert={handleUpdate}
+                  component={component}
+                />
+              )}
+            </InlineWrapper>
+          );
+        })}
 
-      <InlineWrapper
-        cta={() => <AddBlock fileId={file.id} onClick={handleAdd} />}
-      >
-        <p ref={positionRef} className="text-slate-500">
-          Add a component
-        </p>
-      </InlineWrapper>
-
-      <PromptModal onSubmit={onSubmit} input={input} setInput={setInput} />
-    </div>
+        <InlineWrapper
+          cta={() => <AddBlock fileId={file.id} onClick={handleAdd} />}
+        >
+          <p ref={positionRef} className="text-slate-500">
+            Add a component
+          </p>
+        </InlineWrapper>
+      </div>
+      <PromptModal
+        onSubmit={onSubmit}
+        input={input}
+        setInput={setInput}
+        loading={submitted}
+      />
+    </>
   );
 }
 
@@ -240,23 +249,14 @@ function AddBlock({
 function InlineWrapper({
   children,
   cta: Cta = () => <Fragment />,
-  colWidth = 25,
 }: PropsWithChildren<{
   cta?: React.ComponentType;
-  colWidth?: number;
 }>) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <div
-      className={clsx(
-        "grid content-center gap-3",
-        `grid-cols-[${colWidth}px_auto]`,
-      )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={clsx("group grid grid-cols-[25px_auto] content-center gap-3")}
     >
-      <div className={clsx(!isHovered && "opacity-0")}>
+      <div className={clsx("opacity-0 group-hover:opacity-100")}>
         <Cta />
       </div>
       <div>{children}</div>

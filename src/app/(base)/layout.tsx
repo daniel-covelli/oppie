@@ -7,13 +7,7 @@ import Chevron from "../components/svgs/chevron";
 
 import Link from "next/link";
 import Folders from "./_client-components/folders";
-// import dynamic from "next/dynamic";
-// import Folders from "./_client-components/folders";
 
-// const Folders = dynamic(() => import("./_client-components/folders"), {
-//   // loading: () => <p>Loading...</p>,
-//   ssr: false,
-// });
 export default async function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

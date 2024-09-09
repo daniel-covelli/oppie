@@ -9,6 +9,7 @@ import {
 } from "react";
 import { create } from "zustand";
 import Button from "~/app/components/button";
+import Loading from "~/app/components/svgs/loading";
 import Submit from "~/app/components/svgs/submit";
 
 type State = {
@@ -54,6 +55,7 @@ export const usePromptModal = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen, updateIsOpen]);
+
   return {
     positionRef,
     isOpen,
@@ -67,10 +69,12 @@ export default function PromptModal({
   onSubmit,
   input,
   setInput,
+  loading,
 }: {
   onSubmit: (e: FormEvent<HTMLFormElement>) => Promise<void>;
   input: string;
   setInput: Dispatch<SetStateAction<string>>;
+  loading: boolean;
 }) {
   const { position, isOpen, updateIsOpen } = usePromptModal();
 
@@ -93,7 +97,7 @@ export default function PromptModal({
         <DialogTitle className={"pb-1 text-xs text-slate-200"}>
           What code would you like to generate?
         </DialogTitle>
-        <form className="flex flex-row" onSubmit={onSubmit}>
+        <form className="flex flex-row items-center" onSubmit={onSubmit}>
           <Input
             autoFocus
             className={clsx(`w-full bg-transparent text-lg focus:outline-none`)}
@@ -101,8 +105,18 @@ export default function PromptModal({
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
-          <Button type="submit" variant="filled" color="secondary">
-            <Submit className="size-4" />
+
+          <Button
+            type="submit"
+            disabled={loading}
+            variant="filled"
+            color="secondary"
+          >
+            {loading ? (
+              <Loading className="size-4" />
+            ) : (
+              <Submit className="size-4" />
+            )}
           </Button>
         </form>
       </DialogPanel>

@@ -8,6 +8,7 @@ import AddTitleModal, {
   useOpenAddTitleModal,
 } from "~/app/components/modal/add-title-modal";
 import AlertModal from "~/app/components/modal/alert-modal";
+import IconButton from "~/app/components/icon-button";
 
 export default function Folders({
   initialFolders,
@@ -26,15 +27,15 @@ export default function Folders({
       <div className="flex flex-col">
         <div className="pl-2.5 pr-2">
           <ActionWrapper
-            actions={() => (
-              <button
+            actions={({ setHovered }) => (
+              <IconButton
                 onClick={(e) => {
                   handleOpen(e, { type: "folder" });
+                  setHovered(false);
                 }}
-                className="flex flex-1 flex-row items-center gap-2 rounded p-1 leading-snug text-slate-200 hover:bg-slate-600"
               >
                 <Plus className="size-4" />
-              </button>
+              </IconButton>
             )}
           >
             <p className="flex-1 text-sm">Folders</p>
