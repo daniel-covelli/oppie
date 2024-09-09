@@ -53,25 +53,12 @@ export const componentRouter = createTRPCRouter({
       });
     }),
 
-  getFile: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      return ctx.db.file.findUniqueOrThrow({
-        where: {
-          id: input.id,
-          ownerId: ctx.session.user.id,
-        },
-        include: {
-          heading: true,
-          components: {
-            where: { NOT: { position: null } },
-            orderBy: { position: "asc" },
-          },
-        },
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.component.delete({
+        where: { id: input.id, file: { ownerId: ctx.session.user.id } },
       });
+      return true;
     }),
 });

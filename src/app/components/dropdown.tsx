@@ -8,15 +8,16 @@ import Options from "./svgs/options";
 import { useOpenAlertModal } from "./modal/alert-modal";
 import TrashSolid from "./svgs/trash-solid";
 import EditSolid from "./svgs/edit-solid";
-import React from "react";
+import React, { Fragment } from "react";
+import IconButton from "./icon-button";
 
 export default function DropDown({
-  buttonIcon: ButtonIcon,
+  icon: Icon,
   options,
   shouldButtonDisapearOnOpen = false,
   title,
 }: {
-  buttonIcon: React.ComponentType;
+  icon: React.ComponentType;
   options: {
     id: string;
     component: React.ComponentType<{ close: () => void }>;
@@ -28,14 +29,14 @@ export default function DropDown({
     <Menu as="div" className="mb-0! relative inline-block">
       {({ open, close }) => (
         <>
-          <MenuButton
-            className={clsx(
-              open && shouldButtonDisapearOnOpen && "opacity-0",
-              "inline-flex rounded p-1 text-slate-300 hover:bg-slate-600",
-              "data-[active]:bg-slate-600",
-            )}
-          >
-            <ButtonIcon />
+          <MenuButton as={Fragment}>
+            <IconButton
+              className={clsx(
+                open && shouldButtonDisapearOnOpen && "opcaity-0",
+              )}
+            >
+              <Icon />
+            </IconButton>
           </MenuButton>
           <MenuItems
             transition
@@ -65,7 +66,7 @@ export function AddButton({ folderId }: { folderId: string }) {
   return (
     <>
       <DropDown
-        buttonIcon={() => <Plus className="size-4" />}
+        icon={() => <Plus className="size-4" />}
         options={[
           {
             id: "Add folder",
@@ -105,7 +106,7 @@ export function OptionsButton({ folderId }: { folderId: string }) {
   return (
     <>
       <DropDown
-        buttonIcon={() => <Options className="size-4" />}
+        icon={() => <Options className="size-4" />}
         options={[
           {
             id: "Delete",
