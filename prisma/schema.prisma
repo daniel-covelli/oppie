@@ -92,6 +92,10 @@ model Folder {
     @@index([ownerId])
 }
 
+enum CodeOutputType {
+    RTT
+    PYTHON
+}
 model File {
     id String @id @default(uuid())
 
@@ -109,6 +113,8 @@ model File {
     ownerId    String
     owner      User        @relation(fields: [ownerId], references: [id])
     components Component[] @relation("FileComponents")
+
+    codeOutputType CodeOutputType?
 
     @@index([folderId])
     @@index([ownerId])

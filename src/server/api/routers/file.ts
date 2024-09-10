@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { CodeOutputType } from "@prisma/client";
 
 export const fileRouter = createTRPCRouter({
   addFile: protectedProcedure
@@ -21,6 +22,21 @@ export const fileRouter = createTRPCRouter({
             },
           },
         },
+      });
+    }),
+
+  addCodeOutputType: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        type: z.enum([CodeOutputType.RTT, CodeOutputType.PYTHON]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.file.update({
+        where: { id: input.id },
+        data: { codeOutputType: input.type },
       });
     }),
 

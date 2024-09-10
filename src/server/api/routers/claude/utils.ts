@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 "server-only";
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -6,6 +7,7 @@ import { z } from "zod";
 import { env } from "~/env";
 import { type AppContext } from "../../trpc";
 import { ResponseType } from "~/definitions";
+import { CodeOutputType } from "@prisma/client";
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
@@ -72,7 +74,17 @@ const ClaudeContentObjectSchema = z.object({
 
 const ClaudeContentsSchema = z.array(ClaudeContentObjectSchema).min(1).max(1);
 
-export async function getMessage({ ctx, input }: MessageInput) {
+const getMessage = async ({
+  input,
+  framework,
+  language,
+  stylingLibrary,
+}: {
+  input: string;
+  framework: string;
+  language: string;
+  stylingLibrary: string;
+}) => {
   const response = await anthropic.messages.create({
     model: MODEL,
     max_tokens: 1000,
@@ -85,9 +97,9 @@ export async function getMessage({ ctx, input }: MessageInput) {
           {
             type: "text",
             text: multiReplace(PROMPT, [
-              ["FRAMEWORK", ctx.session?.user.framework ?? ""],
-              ["LANGUAGE", ctx.session?.user.language ?? ""],
-              ["STYLING_LIBRARY", ctx.session?.user.stylingLibrary ?? ""],
+              ["FRAMEWORK", framework],
+              ["LANGUAGE", language],
+              ["STYLING_LIBRARY", stylingLibrary],
               ["USER_INPUT", input],
             ]),
           },
@@ -131,5 +143,43 @@ export async function getMessage({ ctx, input }: MessageInput) {
   throw new TRPCError({
     code: "UNPROCESSABLE_CONTENT",
     message: "Response object could not be processed",
+  });
+};
+
+export async function getMessageByCtx({ ctx, input }: MessageInput) {
+  return getMessage({
+    input,
+    framework: ctx.session?.user.framework ?? "",
+    language: ctx.session?.user.language ?? "",
+    stylingLibrary: ctx.session?.user.stylingLibrary ?? "",
+  });
+}
+
+interface MessageInputByFile {
+  type: CodeOutputType;
+  input: string;
+}
+
+const TYPE_VALUES: Record<
+  CodeOutputType,
+  | { framework: "React"; language: "TypeScript"; stylingLibrary: "Tailwind" }
+  | { framework: "Python"; language: "Python"; stylingLibrary: "Python" }
+> = {
+  [CodeOutputType.RTT]: {
+    framework: "React",
+    language: "TypeScript",
+    stylingLibrary: "Tailwind",
+  },
+  [CodeOutputType.PYTHON]: {
+    framework: "Python",
+    language: "Python",
+    stylingLibrary: "Python",
+  },
+};
+
+export async function getMessageByFile({ type, input }: MessageInputByFile) {
+  return getMessage({
+    input,
+    ...TYPE_VALUES[type],
   });
 }

@@ -26,6 +26,7 @@ export const componentRouter = createTRPCRouter({
   upsertComponent: protectedProcedure
     .input(upsertComponentInputSchema)
     .mutation(async ({ ctx, input }) => {
+      console.log(input);
       let nextPosition: null | number = null;
       if (!input.id) {
         const next = (

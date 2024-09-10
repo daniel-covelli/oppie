@@ -4,7 +4,8 @@ import { type RouterInputs, type RouterOutputs } from "~/trpc/react";
 import { useDebouncedCallback } from "use-debounce";
 
 interface InlineInputProps {
-  component: RouterOutputs["file"]["getFile"]["heading"];
+  component: RouterOutputs["file"]["getFile"]["components"][0];
+  fileId: RouterOutputs["file"]["getFile"]["id"];
   handleUpsert: (args: RouterInputs["component"]["upsertComponent"]) => void;
 }
 
@@ -13,7 +14,7 @@ export interface MyComponentRef {
 }
 
 const InlineInput = React.forwardRef<MyComponentRef, InlineInputProps>(
-  ({ component, handleUpsert }, ref) => {
+  ({ component, handleUpsert, fileId }, ref) => {
     const internalRef = useRef<HTMLInputElement>(null);
     const [value, setValue] = useState(component.content ?? "");
 
@@ -21,7 +22,7 @@ const InlineInput = React.forwardRef<MyComponentRef, InlineInputProps>(
       handleUpsert({
         id: component.id,
         content: value,
-        fileId: component.fileId,
+        fileId: component.fileId ?? fileId,
       });
     }, 1000);
 
@@ -46,7 +47,7 @@ const InlineInput = React.forwardRef<MyComponentRef, InlineInputProps>(
           ref={internalRef}
           id={component.id}
           className={clsx(
-            "bg-transparent focus:outline-none",
+            "w-full bg-transparent focus:outline-none",
             component?.type === "HEADING" && "text-3xl",
           )}
           value={value}
