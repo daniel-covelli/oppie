@@ -51,7 +51,7 @@ The code that your write should be executable.\n\n
 
 If you need any clarification or additional information about the user's requirements,
 state so before generating the component. If you need clarification wrap your clarification in <question> tag.
-Otherwise, proceed with creating the React component based on the given input.\n`;
+Otherwise, proceed with creating the code based on the given input.\n`;
 
 interface MessageInput {
   ctx: AppContext;
