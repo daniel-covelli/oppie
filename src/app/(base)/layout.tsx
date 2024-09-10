@@ -4,10 +4,12 @@ import { BreadCrumbs, SignOutButton } from "./client-components";
 
 import Link from "next/link";
 import Folders from "./_client-components/folders";
+import { getSessionOrRedirect } from "~/server/ssr-utils";
 
 export default async function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  await getSessionOrRedirect();
   const folders = await api.folder.getFolders();
   void (await api.folder.getFolders.prefetch());
 

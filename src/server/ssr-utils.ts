@@ -13,7 +13,7 @@ export async function hasClaudeSessionBeenEstablished() {
 
 export async function getSessionOrRedirect() {
   const session = await getServerAuthSession();
-  if (!session) {
+  if (!session?.user) {
     redirect("/login");
   }
 }

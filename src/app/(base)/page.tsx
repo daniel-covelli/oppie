@@ -5,13 +5,10 @@ import ReactIcon from "../components/svgs/react";
 import Tag from "../components/tag";
 import TailwindIcon from "../components/svgs/tailwind";
 import TypescriptIcon from "../components/svgs/typescript";
-import { getSessionOrRedirect } from "~/server/ssr-utils";
 import { api } from "~/trpc/server";
 
 export default async function Home() {
-  await getSessionOrRedirect();
   const isSessionEstablished = await api.session.getClaudeSession();
-  void (await api.session.getClaudeSession.prefetch());
   return !isSessionEstablished ? (
     <div>
       <p className="text-5xl">Welcome to Oppie 👋</p>
