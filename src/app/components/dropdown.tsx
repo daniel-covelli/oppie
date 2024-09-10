@@ -11,7 +11,7 @@ import EditSolid from "./svgs/edit-solid";
 import React, { type Dispatch, type SetStateAction } from "react";
 import IconButton from "./icon-button";
 
-const dummyDispatch: Dispatch<SetStateAction<boolean>> = (value) => undefined;
+const dummyDispatch: Dispatch<SetStateAction<boolean>> = (_) => undefined;
 
 export default function DropDown({
   icon: Icon,
@@ -19,7 +19,6 @@ export default function DropDown({
   shouldButtonDisapearOnOpen = false,
   title,
   setIgnoreMouseOut = dummyDispatch,
-  setHovered = dummyDispatch,
 }: {
   icon: React.ComponentType;
   options: {
@@ -29,7 +28,6 @@ export default function DropDown({
   shouldButtonDisapearOnOpen?: boolean;
   title?: string;
   setIgnoreMouseOut?: Dispatch<SetStateAction<boolean>>;
-  setHovered?: Dispatch<SetStateAction<boolean>>;
 }) {
   return (
     <Menu as="div" className="relative flex">
