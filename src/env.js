@@ -15,6 +15,10 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
+    POSTGRES_PRISMA_URL:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
     NEXTAUTH_URL: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
