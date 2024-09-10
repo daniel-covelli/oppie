@@ -27,7 +27,7 @@ export default async function Layout({
         <div className="flex flex-1 flex-col overflow-hidden">
           <header className="border-b border-slate-750">
             <div className="flex flex-row items-center justify-between px-6 py-3">
-              <div className="flex flex-row items-center gap-3">
+              <div className="flex flex-row items-center gap-1">
                 <BreadCrumbs folders={folders} />
               </div>
 
