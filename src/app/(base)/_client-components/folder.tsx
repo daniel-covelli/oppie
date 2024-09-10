@@ -12,7 +12,7 @@ import Files from "./files";
 import { type RouterOutputs } from "~/trpc/react";
 import { AddButton, OptionsButton } from "~/app/components/dropdown";
 
-type RecursiveFolderProps = Omit<
+export type RecursiveFolderProps = Omit<
   RouterOutputs["folder"]["getFolders"][0],
   "children"
 > & {

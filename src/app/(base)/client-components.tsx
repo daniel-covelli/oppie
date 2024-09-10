@@ -3,49 +3,233 @@
 import { signOut } from "next-auth/react";
 import Button from "../components/button";
 import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
-import { type FormEvent, type MouseEventHandler, useState } from "react";
+
+import { usePathname, useRouter } from "next/navigation";
+import {
+  type FormEvent,
+  Fragment,
+  type MouseEventHandler,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import { tsxLanguage } from "@codemirror/lang-javascript";
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { ResponseType } from "~/definitions";
 import HomeSolid from "../components/svgs/home-solid";
 import Interactive from "../components/interactive";
 import { myTheme } from "../_configs";
+import { type RecursiveFolderProps } from "./_client-components/folder";
+import Chevron from "../components/svgs/chevron";
+import Link from "next/link";
+import FolderOpenSolid from "../components/svgs/folder-open-solid";
+import FileIconSolid from "../components/svgs/file-solid";
+import Loading from "../components/svgs/loading";
 
 export function SignOutButton() {
   return <Button onClick={() => signOut()}>Sign out</Button>;
 }
 
+const useBreadCrumbLoading = (callback: () => Promise<void>) => {
+  const [isTransitioning, startTransition] = useTransition();
+
+  const handleMutation = useCallback(async () => {
+    startTransition(async () => {
+      await callback();
+    });
+  }, [callback]);
+
+  return { handleMutation, isPending: isTransitioning };
+};
+
 export function SelectReactButton() {
+  const utils = api.useUtils();
   const router = useRouter();
-  const updateSession = api.session.updateSession.useMutation({
-    onSuccess: () => router.refresh(),
+  const { mutateAsync } = api.session.updateSession.useMutation();
+  const { handleMutation, isPending } = useBreadCrumbLoading(async () => {
+    await mutateAsync();
+    await utils.session.getClaudeSession.invalidate();
+    router.refresh();
   });
 
-  return (
-    <Button color="secondary" onClick={() => updateSession.mutate()}>
-      {updateSession.isPending ? "Loading..." : "Select"}
+  return isPending ? (
+    <div className="flex justify-center">
+      <Loading className="size-4" />
+    </div>
+  ) : (
+    <Button color="secondary" onClick={handleMutation}>
+      Select
     </Button>
   );
 }
+interface UseBreadCrumbsResponseType {
+  key: string;
+  text: string;
+  icon?: React.ComponentType;
+  onClick?: () => Promise<void>;
+  href: string;
+}
+interface BreadCrumbsProps {
+  folders: RecursiveFolderProps[];
+}
 
-export function HomeButton({ disabled }: { disabled: boolean }) {
+const useManageBreadCrumbs = ({
+  folders,
+  handleMutation,
+  isSessionEstablished,
+}: BreadCrumbsProps & {
+  handleMutation: () => Promise<void>;
+  isSessionEstablished: boolean;
+}): UseBreadCrumbsResponseType[] => {
+  const [breadCrumbs, setBreadCrumbs] = useState<UseBreadCrumbsResponseType[]>(
+    [],
+  );
+  const pathName = usePathname();
+
+  const handleConstructBreadCrumbs = useCallback(
+    (
+      pathName: string,
+      folders: RecursiveFolderProps[],
+      isSessionEstablished: boolean,
+    ): UseBreadCrumbsResponseType[] => {
+      const baseBreadCrumbs: UseBreadCrumbsResponseType[] = [
+        {
+          key: "home",
+          text: "Home",
+          icon: () => <HomeSolid className="size-3" />,
+          onClick: async () => {
+            await handleMutation();
+          },
+          href: "/",
+        },
+      ];
+
+      if (pathName === "/") {
+        return [
+          ...baseBreadCrumbs,
+          ...(isSessionEstablished
+            ? [
+                {
+                  key: "generate",
+                  text: "Generate",
+                  href: "/",
+                },
+              ]
+            : []),
+        ];
+      }
+
+      const findBreadCrumbs = (
+        currentPath: string,
+        currentFolders: RecursiveFolderProps[],
+        accumulator: UseBreadCrumbsResponseType[] = [],
+      ): UseBreadCrumbsResponseType[] => {
+        for (const folder of currentFolders) {
+          const newAccumulator: UseBreadCrumbsResponseType[] = [
+            ...accumulator,
+            {
+              key: folder.id,
+              text: folder.heading.content ?? "",
+              href: `/folder/${folder.id}`,
+              icon: () => <FolderOpenSolid className="size-3" />,
+            },
+          ];
+          if (currentPath.includes(folder.id)) {
+            return newAccumulator;
+          }
+
+          const childResult = findBreadCrumbs(
+            currentPath,
+            folder.children,
+            newAccumulator,
+          );
+          if (childResult.length > newAccumulator.length) {
+            return childResult;
+          }
+
+          const file = folder.files.find((file) =>
+            currentPath.includes(file.id),
+          );
+          if (file) {
+            return [
+              ...newAccumulator,
+              {
+                key: file.id,
+                text: file.heading.content ?? "",
+                href: `/document/${file.id}`,
+                icon: () => <FileIconSolid className="size-3" />,
+              },
+            ];
+          }
+        }
+        return accumulator;
+      };
+
+      const pathBreadCrumbs = findBreadCrumbs(pathName, folders);
+
+      return [...baseBreadCrumbs, ...pathBreadCrumbs];
+    },
+    [handleMutation],
+  );
+
+  useEffect(() => {
+    setBreadCrumbs(
+      handleConstructBreadCrumbs(pathName, folders, isSessionEstablished),
+    );
+  }, [folders, handleConstructBreadCrumbs, isSessionEstablished, pathName]);
+
+  return breadCrumbs;
+};
+
+export function BreadCrumbs({ folders }: BreadCrumbsProps) {
+  const utils = api.useUtils();
   const router = useRouter();
-  const removeSession = api.session.removeSession.useMutation({
-    onSuccess: () => router.refresh(),
+  const { mutateAsync } = api.session.removeSession.useMutation();
+
+  const { data, isPending: isSessionPending } =
+    api.session.getClaudeSession.useQuery();
+
+  const { handleMutation, isPending } = useBreadCrumbLoading(
+    useCallback(async () => {
+      await mutateAsync();
+      await utils.session.getClaudeSession.invalidate();
+      router.refresh();
+    }, [mutateAsync, router, utils.session.getClaudeSession]),
+  );
+  const breadCrumbs = useManageBreadCrumbs({
+    folders,
+    handleMutation,
+    isSessionEstablished: data ?? false,
   });
 
-  return (
-    <Button
-      disabled={disabled}
-      size="sm"
-      icon
-      variant="transparent"
-      onClick={() => removeSession.mutate()}
-    >
-      <HomeSolid className="size-3" />
-      Home
-    </Button>
+  return isPending || isSessionPending ? (
+    <div className="h-4 w-10 animate-pulse rounded bg-slate-700" />
+  ) : (
+    breadCrumbs.map(
+      (
+        { key, onClick, icon: Icon = () => <Fragment />, text, href },
+        index,
+      ) => (
+        <Fragment key={key}>
+          {index > 0 && index < breadCrumbs.length && (
+            <Chevron className="size-2 rotate-180" /> // Adjust className as needed
+          )}
+          <Button
+            as={Link}
+            className="px-0"
+            href={href}
+            size="sm"
+            icon
+            variant="transparent"
+            onClick={onClick}
+          >
+            <Icon />
+            {text}
+          </Button>
+        </Fragment>
+      ),
+    )
   );
 }
 

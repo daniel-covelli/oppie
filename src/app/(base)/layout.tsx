@@ -1,9 +1,6 @@
 import { api, HydrateClient } from "~/trpc/server";
 import BrandText from "../components/brand-text";
-import { HomeButton, SignOutButton } from "./client-components";
-import Button from "../components/button";
-import { hasClaudeSessionBeenEstablished } from "~/server/ssr-utils";
-import Chevron from "../components/svgs/chevron";
+import { BreadCrumbs, SignOutButton } from "./client-components";
 
 import Link from "next/link";
 import Folders from "./_client-components/folders";
@@ -11,8 +8,6 @@ import Folders from "./_client-components/folders";
 export default async function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const isSessionEstablished = await hasClaudeSessionBeenEstablished();
-
   const folders = await api.folder.getFolders();
   void (await api.folder.getFolders.prefetch());
 
@@ -30,21 +25,8 @@ export default async function Layout({
         <div className="flex flex-1 flex-col overflow-hidden">
           <header className="border-b border-slate-750">
             <div className="flex flex-row items-center justify-between px-6 py-3">
-              <div className="flex flex-row items-center gap-1">
-                <HomeButton disabled={!isSessionEstablished} />
-                {isSessionEstablished && (
-                  <>
-                    <Chevron className="h-2 rotate-180" />
-                    <Button
-                      disabled={true}
-                      size="sm"
-                      icon
-                      variant="transparent"
-                    >
-                      Generate
-                    </Button>
-                  </>
-                )}
+              <div className="flex flex-row items-center gap-3">
+                <BreadCrumbs folders={folders} />
               </div>
 
               <SignOutButton />

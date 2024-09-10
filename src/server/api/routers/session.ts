@@ -14,6 +14,14 @@ export const sessionRouter = createTRPCRouter({
     return { ok: "success" };
   }),
 
+  getClaudeSession: protectedProcedure.query(async ({ ctx }) => {
+    return (
+      !!ctx.session?.user.language &&
+      !!ctx.session?.user.framework &&
+      !!ctx.session.user.stylingLibrary
+    );
+  }),
+
   removeSession: protectedProcedure.mutation(async ({ ctx }) => {
     await ctx.db.session.updateMany({
       where: { userId: ctx.session.user.id },

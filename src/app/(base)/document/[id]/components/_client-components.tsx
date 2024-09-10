@@ -102,7 +102,7 @@ export default function FileContent({
     manageNewComponent(data);
   };
 
-  const { mutateAsync, error } = api.claude.getMessage.useMutation();
+  const { mutateAsync } = api.claude.getMessage.useMutation();
 
   const [submitted, setSubmitted] = useState(false);
 

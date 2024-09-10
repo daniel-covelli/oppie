@@ -6,7 +6,6 @@ import {
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
-import { z } from "zod";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
@@ -34,19 +33,6 @@ declare module "next-auth" {
   //   // role: UserRole;
   // }
 }
-
-const NewSessionSchema = z.object({
-  user: z.object({
-    name: z.string(),
-    email: z.string(),
-    image: z.string(),
-    id: z.string(),
-    framework: z.enum(["React"]),
-    language: z.enum(["TypeScript"]),
-    stylingLibrary: z.enum(["Tailwind"]),
-  }),
-  expires: z.string(),
-});
 
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.

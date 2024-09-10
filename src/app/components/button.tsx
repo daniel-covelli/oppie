@@ -64,8 +64,8 @@ const CustomButton = <T extends ElementType = "button">({
             special: "",
           },
         }[variant][color],
-        { md: "text-md px-4", sm: "px-1 text-sm", lg: "px-4 text-lg" }[size],
-        icon && "flex flex-row items-center gap-3",
+        { md: "text-md px-3", sm: "px-1 text-sm", lg: "px-4 text-lg" }[size],
+        icon && "flex flex-row items-center gap-2",
         fit && "w-fit",
         className,
       )}
