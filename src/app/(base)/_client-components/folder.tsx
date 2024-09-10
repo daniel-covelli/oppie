@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import FolderClosed from "~/app/components/svgs/folder-closed";
 import FolderOpenSolid from "~/app/components/svgs/folder-open-solid";
 
@@ -23,37 +23,32 @@ const useFolderStateManager = (folder: RecursiveFolderProps) => {
   const [opened, setOpened] = useState(false);
   const pathname = usePathname();
 
+  const hasChildren = useMemo(() => {
+    return folder.children.length > 0 || folder.files.length > 0;
+  }, [folder.children.length, folder.files.length]);
+
   const handleShouldOpen = useCallback(
-    (pathname: string, folder: RecursiveFolderProps): boolean => {
-      if (pathname.includes(folder.id)) {
-        setOpened(true);
+    (currentPathname: string, currentFolder: RecursiveFolderProps): boolean => {
+      if (currentPathname.includes(currentFolder.id)) {
         return true;
       }
-      if (folder.children.length > 0 || folder.files.length > 0) {
-        const shouldOpen =
-          folder.children.some((child) => handleShouldOpen(pathname, child)) ||
-          folder.files.some((child) => pathname.includes(child.id));
-
-        if (shouldOpen) {
-          setOpened(true);
-        }
-        return shouldOpen;
-      } else {
-        setOpened(false);
-        return false;
+      if (hasChildren) {
+        return (
+          currentFolder.children.some((child) =>
+            handleShouldOpen(currentPathname, child),
+          ) ||
+          currentFolder.files.some((file) => currentPathname.includes(file.id))
+        );
       }
+      return false;
     },
-    [],
+    [hasChildren],
   );
 
   useEffect(() => {
-    handleShouldOpen(pathname, folder);
+    const shouldOpen = handleShouldOpen(pathname, folder);
+    setOpened(shouldOpen);
   }, [folder, handleShouldOpen, pathname]);
-
-  const hasChildren =
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    (folder.children && folder.children.length > 0) ||
-    (folder.files && folder.files.length > 0);
 
   return {
     opened,
