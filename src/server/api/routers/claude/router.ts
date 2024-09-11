@@ -6,19 +6,23 @@ import {
   promptingProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
-
-import { getMessageByCtx, getMessageByFile } from "./utils";
+import ClaudeService from "../services/claude";
 import { TRPCError } from "@trpc/server";
 
-const GetMessageSchema = z.object({
-  input: z.string(),
-});
+const claudeService = new ClaudeService();
 
 export const claudeRouter = createTRPCRouter({
   getMessage: promptingProcedure
-    .input(GetMessageSchema)
+    .input(
+      z.object({
+        input: z.string(),
+      }),
+    )
     .mutation(async ({ ctx, input: { input } }) => {
-      return getMessageByCtx({ ctx, input });
+      return claudeService.getMessageByUserSession({
+        user: ctx.session.user,
+        input,
+      });
     }),
 
   getMessageForFile: protectedProcedure
@@ -38,8 +42,7 @@ export const claudeRouter = createTRPCRouter({
           message: "Must have codeOutputType selected",
         });
       }
-      return getMessageByFile({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      return claudeService.getMessageByOutputType({
         type: file.codeOutputType,
         input: input.input,
       });

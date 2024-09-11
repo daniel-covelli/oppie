@@ -6,7 +6,7 @@ import {
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
-
+import { type UserSession } from "~/definitions/user-session";
 import { env } from "~/env";
 import { db } from "~/server/db";
 
@@ -18,14 +18,8 @@ import { db } from "~/server/db";
  */
 declare module "next-auth" {
   interface Session extends DefaultSession {
-    user: {
-      id: string;
-      framework?: "React";
-      language?: "TypeScript";
-      stylingLibrary?: "Tailwind";
-      // ...other properties
-      // role: UserRole;
-    } & DefaultSession["user"];
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    user: UserSession & DefaultSession["user"];
   }
 
   // interface User {
