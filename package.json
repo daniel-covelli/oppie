@@ -21,6 +21,7 @@
     "@auth/prisma-adapter": "^1.6.0",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-python": "^6.1.6",
+    "@headlessui-float/react": "^0.15.0",
     "@headlessui/react": "^2.1.2",
     "@prisma/client": "^5.19.1",
     "@t3-oss/env-nextjs": "^0.10.1",

@@ -17,7 +17,6 @@ export const myTheme = createTheme({
   styles: [
     { tag: t.comment, color: "#0d9488" },
     { tag: t.variableName, color: "#7dd3fc" },
-    { tag: t.string, color: "#fcd34d" },
     { tag: t.bracket, color: "#a855f7" },
     { tag: t.paren, color: "#fde047" },
     { tag: t.separator, color: "#cbd5e1" },
@@ -31,5 +30,6 @@ export const myTheme = createTheme({
     { tag: t.angleBracket, color: "#0ea5e9" },
     { tag: t.tagName, color: "#0ea5e9" },
     { tag: t.attributeName, color: "#0ea5e9" },
+    { tag: t.string, color: "#fcd34d" },
   ],
 });

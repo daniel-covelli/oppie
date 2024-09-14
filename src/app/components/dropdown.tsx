@@ -10,8 +10,15 @@ import TrashSolid from "./svgs/trash-solid";
 import EditSolid from "./svgs/edit-solid";
 import React, { type Dispatch, type SetStateAction } from "react";
 import IconButton from "./icon-button";
+import { DropdownButton, type DropdownButtonProps } from "./clickable";
 
 const dummyDispatch: Dispatch<SetStateAction<boolean>> = (_) => undefined;
+
+export interface DropdownOption extends DropdownButtonProps {
+  id: string;
+}
+
+export type DropdownOptions = DropdownOption[];
 
 export default function DropDown({
   icon: Icon,
@@ -21,17 +28,14 @@ export default function DropDown({
   setIgnoreMouseOut = dummyDispatch,
 }: {
   icon: React.ComponentType;
-  options: {
-    id: string;
-    component: React.ComponentType<{ close: () => void }>;
-  }[];
+  options: DropdownOptions;
   shouldButtonDisapearOnOpen?: boolean;
   title?: string;
   setIgnoreMouseOut?: Dispatch<SetStateAction<boolean>>;
 }) {
   return (
-    <Menu as="div" className="relative flex">
-      {({ open, close }) => {
+    <Menu>
+      {({ open }) => {
         return (
           <>
             <MenuButton
@@ -47,20 +51,14 @@ export default function DropDown({
             <MenuItems
               transition
               anchor={{ to: "top start", gap: "2px", padding: "100px" }}
-              className="origin-center rounded border border-slate-600 bg-slate-700 p-2 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+              className="origin-center rounded border border-slate-600 bg-slate-700 p-1 text-sm transition duration-100 ease-out [--anchor-gap:var(--spacing-1)] data-[closed]:scale-95 data-[closed]:opacity-0"
             >
               <div className="flex flex-col gap-1">
                 {title && (
                   <p className="pb-1 pl-2 text-xs text-gray-300">{title}</p>
                 )}
-                {options.map(({ id, component: Component }) => (
-                  <MenuItem as={"div"} key={id} className="flex">
-                    <Component
-                      close={() => {
-                        close();
-                      }}
-                    />
-                  </MenuItem>
+                {options.map(({ id, ...props }) => (
+                  <MenuItem key={id} as={DropdownButton} {...props} />
                 ))}
               </div>
             </MenuItems>
@@ -92,35 +90,23 @@ export function AddButton({
         options={[
           {
             id: "Add folder",
-            component: () => (
-              <button
-                onClick={(e) => {
-                  handleOpen(e, { type: "folder", parentId: folderId });
-                  setHovered(false);
-                  setIgnoreMouseOut(false);
-                }}
-                className="flex flex-1 flex-row items-center gap-2 rounded p-1 px-2 leading-snug text-slate-200 hover:bg-slate-600"
-              >
-                <FolderPlus className="size-4 text-slate-400" />
-                <p className="text-sm">{"Add folder"}</p>
-              </button>
-            ),
+            text: "Add folder",
+            icon: () => <FolderPlus className="size-4 text-slate-400" />,
+            onClick: (e) => {
+              handleOpen(e, { type: "folder", parentId: folderId });
+              setHovered(false);
+              setIgnoreMouseOut(false);
+            },
           },
           {
             id: "Add document",
-            component: () => (
-              <button
-                onClick={(e) => {
-                  handleOpen(e, { type: "document", folderId });
-                  setHovered(false);
-                  setIgnoreMouseOut(false);
-                }}
-                className="flex flex-1 flex-row items-center gap-2 rounded p-1 px-2 leading-snug text-slate-200 hover:bg-slate-600"
-              >
-                <FilePlus className="size-4 text-slate-400" />
-                <p className="text-sm">{"Add document"}</p>
-              </button>
-            ),
+            text: "Add document",
+            icon: () => <FilePlus className="size-4 text-slate-400" />,
+            onClick: (e) => {
+              handleOpen(e, { type: "document", folderId });
+              setHovered(false);
+              setIgnoreMouseOut(false);
+            },
           },
         ]}
       />
@@ -143,27 +129,18 @@ export function OptionsButton({
         options={[
           {
             id: "Delete",
-            component: () => (
-              <button
-                onClick={(e) => {
-                  handleOpen(e, { type: "folder", folderId });
-                  setHovered(false);
-                }}
-                className="flex w-full flex-row items-center gap-2 rounded p-1 leading-snug text-slate-200 hover:bg-slate-600"
-              >
-                <TrashSolid className="size-4 text-slate-400" />
-                <p className="text-sm">{"Delete"}</p>
-              </button>
-            ),
+            text: "Delete",
+            icon: () => <TrashSolid className="size-4 text-slate-400" />,
+            onClick: (e) => {
+              handleOpen(e, { type: "folder", folderId });
+              setHovered(false);
+            },
           },
           {
             id: "Edit",
-            component: () => (
-              <button className="flex flex-row items-center gap-2 rounded p-1 leading-snug text-slate-200 hover:bg-slate-600">
-                <EditSolid className="size-4 text-slate-400" />
-                <p className="text-sm">{"Edit name"}</p>
-              </button>
-            ),
+            icon: () => <EditSolid className="size-4 text-slate-400" />,
+            disabled: true,
+            text: "Edit Name",
           },
         ]}
       />

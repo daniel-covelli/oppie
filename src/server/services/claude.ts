@@ -87,17 +87,19 @@ Follow these steps to generate the React component:
 5. Add appropriate comments to explain complex logic or important parts of the code.
 
 Adhere to these coding style guidelines:
-- Use ES6+ syntax
-- Follow proper indentation and formatting
+- Use appropriate syntax associated with {{LANGUAGE}}
+- The code you write should be easily understood
 - Use meaningful variable and function names
 - Implement error handling where appropriate
 - Ensure the component is reusable and modular
 - All props should be defined in a interface
 
-Once you have generated the component, present your code inside <code> tags.
+Once you have generated the component, present your code with in a <code> tag.
 This <code> tag and its contents should be the only thing that is written in your response.
 There should be no supplementary text, describing the component or its functionality,
-your job is to only provide the code in the <code> tag.
+your job is to only provide the code in the <code> tag. The content after the <code> tag 
+should be directly after the tag. The content before the </code> tag should be directly before. 
+There should be no indentation or spacing around the code tags.
 The code that your write should be executable.
 
 If you need any clarification or additional information about the user's requirements,
@@ -218,24 +220,33 @@ Otherwise, proceed with creating the code based on the given input.
     return result;
   }
 
-  streamMessage() {
+  public async *streamMessage({ type, input }: MessageInputByFile) {
+    const { framework, language, stylingLibrary } = TYPE_VALUES[type];
     const text = this.interpolatorPrompt({
       replacements: [
-        ["FRAMEWORK", "React"],
-        ["LANGUAGE", "Typescript"],
-        ["STYLING_LIBRARY", "Tailwind"],
-        ["USER_INPUT", "Generate button component"],
+        ["FRAMEWORK", framework],
+        ["LANGUAGE", language],
+        ["STYLING_LIBRARY", stylingLibrary],
+        ["USER_INPUT", input],
       ],
     });
 
-    anthropic.messages
-      .stream(this.generateClaudeInput({ text }))
-      .on("text", (text) => {
-        console.log(text);
-      });
+    const stream = anthropic.messages.stream({
+      ...this.generateClaudeInput({ text }),
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === "content_block_delta") {
+        const { success, data } = textSchema.safeParse(chunk.delta);
+        if (success) {
+          yield data.text;
+        }
+      }
+    }
   }
 }
 
-const client = new ClaudeService();
-
-client.streamMessage();
+const textSchema = z.object({
+  type: z.literal("text_delta"),
+  text: z.string(),
+});

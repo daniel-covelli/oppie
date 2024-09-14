@@ -6,7 +6,7 @@ import {
   promptingProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
-import ClaudeService from "../services/claude";
+import ClaudeService from "../../../services/claude";
 import { TRPCError } from "@trpc/server";
 
 const claudeService = new ClaudeService();
@@ -46,5 +46,30 @@ export const claudeRouter = createTRPCRouter({
         type: file.codeOutputType,
         input: input.input,
       });
+    }),
+
+  getMessageStreamForFile: protectedProcedure
+    .input(
+      z.object({
+        input: z.string(),
+        fileId: z.string(),
+      }),
+    )
+    .query(async function* ({ ctx, input }) {
+      const file = await ctx.db.file.findUniqueOrThrow({
+        where: { id: input.fileId },
+      });
+      if (!file.codeOutputType) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Must have codeOutputType selected",
+        });
+      }
+      for await (const data of claudeService.streamMessage({
+        input: input.input,
+        type: file.codeOutputType,
+      })) {
+        yield data;
+      }
     }),
 });

@@ -1,70 +1,10 @@
 import { Dialog, DialogPanel, DialogTitle, Textarea } from "@headlessui/react";
 import clsx from "clsx";
-import {
-  type Dispatch,
-  type FormEvent,
-  type SetStateAction,
-  useEffect,
-  useRef,
-} from "react";
-import { create } from "zustand";
+import { type Dispatch, type FormEvent, type SetStateAction } from "react";
 import Button from "~/app/components/button";
 import Loading from "~/app/components/svgs/loading";
 import Submit from "~/app/components/svgs/submit";
 import { api, type RouterOutputs } from "~/trpc/react";
-
-type State = {
-  isOpen: boolean;
-  position: { x: number; y: number; w: number };
-};
-
-type Action = {
-  updateIsOpen: (isOpen: State["isOpen"]) => void;
-  updatePostion: (isOpen: State["position"]) => void;
-};
-
-const usePromptModalState = create<State & Action>((set) => ({
-  isOpen: false,
-  position: { x: 0, y: 0, w: 0 },
-  updateIsOpen: (isOpen) => set(() => ({ isOpen })),
-  updatePostion: (position) => set(() => ({ position })),
-}));
-
-export const usePromptModal = () => {
-  const { isOpen, updateIsOpen, position, updatePostion } =
-    usePromptModalState();
-
-  const positionRef = useRef<HTMLParagraphElement>(null);
-
-  const handleOpenModal = () => {
-    const rect = positionRef.current?.getBoundingClientRect();
-    updatePostion({
-      x: rect?.left ?? 0,
-      w: rect?.width ?? 0,
-      y: (rect?.top ?? 0) + document.documentElement.scrollTop,
-    });
-    updateIsOpen(true);
-  };
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (isOpen) {
-        updateIsOpen(false);
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [isOpen, updateIsOpen]);
-
-  return {
-    positionRef,
-    isOpen,
-    updateIsOpen,
-    position,
-    handleOpenModal,
-  };
-};
 
 export default function PromptModal({
   onSubmit,
@@ -79,36 +19,36 @@ export default function PromptModal({
   loading: boolean;
   file: RouterOutputs["file"]["getFile"];
 }) {
-  const { position, isOpen, updateIsOpen } = usePromptModal();
+  // const { position, isOpen, updateIsOpen } = usePromptModal();
   const utils = api.useUtils();
   const { mutateAsync } = api.file.addCodeOutputType.useMutation({
     onSuccess: async () => await utils.file.getFile.invalidate({ id: file.id }),
   });
 
-  useEffect(() => {
-    if (isOpen) {
-      setInput("");
-    }
-  }, [isOpen, setInput]);
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     setInput("");
+  //   }
+  // }, [isOpen, setInput]);
 
   return (
     <Dialog
-      className="inset-0 z-10 overflow-y-auto"
-      open={isOpen}
+      className="relative inset-0 z-10 overflow-y-auto"
+      open={false}
       onClose={() => {
-        updateIsOpen(false);
+        // updateIsOpen(false);
         setInput("");
       }}
     >
       <DialogPanel
         transition
         className="data-[closed]:transform-[scale(95%)] z-20 m-0 rounded border border-slate-600 bg-slate-750 p-2 duration-75 ease-out data-[closed]:opacity-0"
-        style={{
-          position: "absolute",
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          width: `${position.w}px`,
-        }}
+        // style={{
+        //   position: "fixed",
+        //   left: `${position.x}px`,
+        //   top: `${position.y}px`,
+        //   width: `${position.w}px`,
+        // }}
       >
         {!file.codeOutputType ? (
           <>
