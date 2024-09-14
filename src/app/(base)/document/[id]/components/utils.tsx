@@ -36,8 +36,7 @@ export const useComponentFocusHandler = (
 
   useEffect(() => {
     updateComponentsState(initialComponents);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialComponents, updateComponentsState]);
 
   const lastComponentRef = useRef<HTMLInputElement>(null);
 

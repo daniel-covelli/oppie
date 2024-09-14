@@ -258,59 +258,54 @@ export default function CodeGen({
                 <div className="shadow-[0_0_25px_-9px_rgba(173,216,230,0.5)]">
                   <CodeDisplay value={stream} type={file.codeOutputType} />
                 </div>
-              ) : (
-                <p>{stream}</p>
-              ))}
+              ) : null)}
           </div>
         </InlineWrapper>
       )}
 
-      <Menu key="button">
-        <div className="ml-[37px]">
-          <MenuButton ref={saveResponseMenuRef} />
-          <MenuItems
-            transition
-            anchor={"bottom start"}
-            className="data-[closed]:transform-[scale(95%)] z-20 m-0 flex w-40 flex-col items-start rounded border border-slate-600 bg-slate-750 p-2 duration-100 ease-out data-[closed]:opacity-0 data-[focus]:outline-none"
-          >
-            <MenuItem>
-              <DropdownButton
-                text="Accept"
-                icon={() => <CheckMark className="size-3" />}
-                className={"gap-3"}
-                onClick={async () => {
-                  if (newCodeComponentId) {
-                    setStream("");
-                    updateComponent.mutate({
-                      id: newCodeComponentId,
-                      fileId: file.id,
-                      content: stream,
-                      type: "CODE",
-                    });
-                  }
-                }}
-              />
-            </MenuItem>
-            <MenuItem
-              as={DropdownButton}
-              text="Decline"
-              icon={() => <CloseIcon className="size-3" />}
-              className={"gap-3"}
-              onClick={() => {
+      <Menu key={"button"}>
+        <MenuButton className="ml-[37px]" ref={saveResponseMenuRef} />
+        <MenuItems
+          transition
+          anchor={"bottom start"}
+          className="data-[closed]:transform-[scale(95%)] z-20 m-0 flex w-40 flex-col items-start rounded border border-slate-600 bg-slate-750 p-2 duration-100 ease-out data-[closed]:opacity-0 data-[focus]:outline-none"
+        >
+          <MenuItem
+            as={DropdownButton}
+            text="Accept"
+            icon={() => <CheckMark className="size-3" />}
+            className={"gap-3"}
+            onClick={async () => {
+              if (newCodeComponentId) {
                 setStream("");
-                if (newCodeComponentId) {
-                  deleteComponent.mutate({ id: newCodeComponentId });
-                }
-              }}
-            />
-            <MenuItem
-              as={DropdownButton}
-              text="Try again"
-              icon={() => <RetryIcon className="size-3" />}
-              className={"gap-3"}
-            />
-          </MenuItems>
-        </div>
+                updateComponent.mutate({
+                  id: newCodeComponentId,
+                  fileId: file.id,
+                  content: stream,
+                  type: "CODE",
+                });
+              }
+            }}
+          ></MenuItem>
+          <MenuItem
+            as={DropdownButton}
+            text="Decline"
+            icon={() => <CloseIcon className="size-3" />}
+            className={"gap-3"}
+            onClick={() => {
+              setStream("");
+              if (newCodeComponentId) {
+                deleteComponent.mutate({ id: newCodeComponentId });
+              }
+            }}
+          />
+          <MenuItem
+            as={DropdownButton}
+            text="Try again"
+            icon={() => <RetryIcon className="size-3" />}
+            className={"gap-3"}
+          />
+        </MenuItems>
       </Menu>
       <Popover className="ml-[37px]">
         {({ open }) => {
