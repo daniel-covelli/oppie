@@ -42,7 +42,7 @@ export const ItemButton = forwardRef<
     <button
       ref={ref}
       className={clsx(
-        "flex w-full flex-row items-center gap-2 rounded p-1 px-1.5 leading-snug text-slate-200 disabled:opacity-70 disabled:hover:bg-transparent data-[focus]:bg-slate-600",
+        "flex w-full flex-row items-center gap-2 rounded p-1 px-1.5 leading-snug text-slate-200 outline-none focus:bg-slate-600 disabled:opacity-70 disabled:hover:bg-transparent data-[focus]:bg-slate-600",
         className,
       )}
       {...props}

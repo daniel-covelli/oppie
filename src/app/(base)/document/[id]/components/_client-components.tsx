@@ -7,9 +7,9 @@ import InlineInput from "./inline-input";
 import TrashSolid from "~/app/components/svgs/trash-solid";
 import IconButton from "~/app/components/icon-button";
 import CodeDisplay from "~/app/components/code-display";
-import CodeGen from "./code-gen";
 import clsx from "clsx";
 import { useComponentFocusHandler } from "./utils";
+import CodeGen from "./code-gen";
 
 export default function FileContent({
   file,

@@ -17,7 +17,6 @@ export default function CodeDisplay({
   type: CodeOutputType;
 }) {
   const parsedValue = value.replace("<code>", "").replace("</code>", "");
-  console.log("pars", parsedValue);
   return (
     <CodeMirror
       readOnly

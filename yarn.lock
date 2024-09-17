@@ -328,7 +328,7 @@
     "@floating-ui/utils" "^0.2.7"
     tabbable "^6.0.0"
 
-"@floating-ui/react@^0.26.5":
+"@floating-ui/react@^0.26.23", "@floating-ui/react@^0.26.5":
   version "0.26.23"
   resolved "https://registry.yarnpkg.com/@floating-ui/react/-/react-0.26.23.tgz#28985e5ce482c34f347f28076f11267e47a933bd"
   integrity sha512-9u3i62fV0CFF3nIegiWiRDwOs7OW/KhSUJDNx2MkQM3LbE5zQOY01sL3nelcVBXvX7Ovvo3A49I8ql+20Wg/Hw==
