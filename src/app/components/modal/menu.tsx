@@ -1,7 +1,11 @@
 import {
   autoUpdate,
+  flip,
   FloatingFocusManager,
   FloatingList,
+  FloatingPortal,
+  offset,
+  type Placement,
   useClick,
   useDismiss,
   useFloating,
@@ -9,7 +13,9 @@ import {
   useInteractions,
   useListItem,
   useListNavigation,
+  useMergeRefs,
   useRole,
+  useTypeahead,
 } from "@floating-ui/react";
 import {
   type PropsWithChildren,
@@ -18,10 +24,13 @@ import {
   useMemo,
   useState,
   useContext,
-  useCallback,
+  type ElementType,
+  forwardRef,
 } from "react";
-import { ItemButton, type DropdownButtonProps } from "../clickable";
+import { DropdownButton, type DropdownButtonProps } from "../clickable";
 import React from "react";
+import { type PolymorphicComponentProp } from "~/definitions/plymorphic-component";
+import clsx from "clsx";
 
 interface MenuContextType {
   getItemProps: (
@@ -36,11 +45,13 @@ interface MenuContextType {
   setFloating: UseFloatingReturn["refs"]["setFloating"];
   setReference: UseFloatingReturn["refs"]["setReference"];
   listRef: React.MutableRefObject<(HTMLButtonElement | null)[]>;
+  labelsRef: React.MutableRefObject<(string | null)[]>;
   context?: UseFloatingReturn["context"];
   getReferenceProps: ReturnType<typeof useInteractions>["getReferenceProps"];
+  floatingStyles: UseFloatingReturn["floatingStyles"];
 }
 
-const MenuContext = React.createContext<MenuContextType>({
+export const MenuContext = React.createContext<MenuContextType>({
   getItemProps: () => ({}),
   activeIndex: null,
   isOpen: false,
@@ -48,36 +59,69 @@ const MenuContext = React.createContext<MenuContextType>({
   getFloatingProps: () => ({}),
   setFloating: () => ({}),
   listRef: { current: [] },
+  labelsRef: { current: [] },
   context: undefined,
   getReferenceProps: () => ({}),
   setReference: () => ({}),
+  floatingStyles: {},
 });
 
-type RenderProps = Pick<MenuContextType, "setIsOpen">;
-type MenuProviderProps = {
-  children: (props: RenderProps) => React.ReactNode;
-  handleOutsidePress?: () => void;
-};
+export function useControlledMenu() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [anchorRef, setAnchorRef] = useState<HTMLElement | null>(null);
+  return useMemo(
+    () => ({
+      isMenuOpen,
+      setIsMenuOpen,
+      anchorRef,
+      setAnchorRef,
+    }),
+    [anchorRef, isMenuOpen],
+  );
+}
 
-export const MenuProvider = ({
-  children,
+export interface ControlledMenuProps {
+  open?: boolean;
+  setOpen?: (val: boolean) => void;
+  anchorRef?: HTMLElement | null;
+}
+export interface MenuOptions extends ControlledMenuProps {
+  initialOpen?: boolean;
+  placement?: Placement;
+  handleOutsidePress?: () => void;
+}
+
+export function useMenu({
+  initialOpen = false,
+  open: controlledOpen,
+  setOpen: setControlledOpen,
+  placement = "bottom-start",
   handleOutsidePress,
-}: MenuProviderProps) => {
+  anchorRef,
+}: MenuOptions) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(initialOpen);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const { refs, context, isPositioned } = useFloating({
-    open: isOpen,
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setOpen = setControlledOpen ?? setUncontrolledOpen;
+
+  const { floatingStyles, refs, context } = useFloating({
+    placement,
+    open: open,
+    middleware: [flip(), offset(5)],
+    elements: {
+      reference: anchorRef,
+    },
     onOpenChange: (val, _, reason) => {
-      setIsOpen(val);
+      setOpen(val);
       if (reason === "escape-key" || reason === "outside-press") {
         handleOutsidePress?.();
       }
     },
-    placement: "bottom-start",
     whileElementsMounted: autoUpdate,
   });
-  const listRef = useRef<Array<HTMLButtonElement | null>>([]);
 
+  const listRef = useRef<Array<HTMLButtonElement | null>>([]);
+  const labelsRef = useRef<Array<string | null>>([]);
   const click = useClick(context);
   const role = useRole(context, { role: "menu" });
   const listNavigation = useListNavigation(context, {
@@ -85,49 +129,53 @@ export const MenuProvider = ({
     activeIndex: activeIndex,
     onNavigate: setActiveIndex,
   });
+
+  const typeahead = useTypeahead(context, {
+    listRef: labelsRef,
+    onMatch: open ? setActiveIndex : undefined,
+    activeIndex,
+  });
+
   const dismiss = useDismiss(context);
 
   const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions(
-    [role, click, dismiss, listNavigation],
+    [role, click, dismiss, listNavigation, typeahead],
   );
 
-  const menuContext = useMemo(
+  return useMemo(
     () => ({
       activeIndex,
       getItemProps,
-      setIsOpen,
-      isOpen,
+      setIsOpen: setOpen,
+      isOpen: open,
       getFloatingProps,
       setFloating: refs.setFloating,
       setReference: refs.setReference,
       listRef,
       context,
       getReferenceProps,
-      isPositioned,
+      floatingStyles,
+      labelsRef,
     }),
     [
       activeIndex,
       getItemProps,
-      isOpen,
+      setOpen,
+      open,
       getFloatingProps,
       refs.setFloating,
       refs.setReference,
       context,
       getReferenceProps,
-      isPositioned,
+      floatingStyles,
     ],
   );
+}
 
-  const renderProps = useCallback(
-    () => ({
-      setIsOpen,
-    }),
-    [setIsOpen],
-  );
+export const Menu = ({ children, ...rest }: PropsWithChildren<MenuOptions>) => {
+  const menuContext = useMenu(rest);
   return (
-    <MenuContext.Provider value={menuContext}>
-      {children(renderProps())}
-    </MenuContext.Provider>
+    <MenuContext.Provider value={menuContext}>{children}</MenuContext.Provider>
   );
 };
 
@@ -139,62 +187,85 @@ export const useMenuContext = () => {
   return context;
 };
 
-export const MenuTrigger = ({ children }: PropsWithChildren) => {
+export const MenuTrigger = <T extends ElementType = "div">({
+  children,
+  as,
+  ...rest
+}: PolymorphicComponentProp<T, PropsWithChildren>) => {
   const { setReference, getReferenceProps } = useMenuContext();
+  const Component = as ?? "div";
   return (
-    <div ref={setReference} {...getReferenceProps()}>
+    <Component ref={setReference} {...rest} {...getReferenceProps()}>
       {children}
-    </div>
+    </Component>
   );
 };
 
-export const Menu = ({ children }: PropsWithChildren) => {
-  const { isOpen, getFloatingProps, context, setFloating, listRef } =
-    useMenuContext();
+export const MenuContent = ({
+  children,
+  width = "sm",
+  paddingScheme = "document",
+}: PropsWithChildren<{ width?: "sm" | "fit"; paddingScheme?: "document" }>) => {
+  const {
+    isOpen,
+    floatingStyles,
+    getFloatingProps,
+    context,
+    setFloating,
+    listRef,
+    labelsRef,
+  } = useMenuContext();
 
   if (!context) return;
 
   return (
-    isOpen && (
-      <FloatingFocusManager context={context} modal={false}>
-        <div
-          className="ml-[37px] flex w-40 flex-col items-start rounded border border-slate-600 bg-slate-750 p-1 focus:outline-none"
-          ref={setFloating}
-          {...getFloatingProps()}
-        >
-          <FloatingList elementsRef={listRef}>{children}</FloatingList>
-        </div>
-      </FloatingFocusManager>
-    )
+    <FloatingList elementsRef={listRef} labelsRef={labelsRef}>
+      {isOpen && (
+        <FloatingPortal>
+          <FloatingFocusManager context={context} modal={false}>
+            <div
+              className={clsx(
+                "Menu flex flex-col rounded border border-slate-600 bg-slate-750 p-1 focus:outline-none",
+                width === "sm" ? "w-40" : "w-fit",
+                paddingScheme && "ml-[37px]",
+              )}
+              ref={setFloating}
+              style={floatingStyles}
+              {...getFloatingProps()}
+            >
+              {children}
+            </div>
+          </FloatingFocusManager>
+        </FloatingPortal>
+      )}
+    </FloatingList>
   );
 };
 
-export const MenuItem = ({
-  text,
-  onClick,
-  ...rest
-}: Omit<DropdownButtonProps, "description">) => {
-  const menu = React.useContext(MenuContext);
-  const item = useListItem({ label: text });
-  const isActive = item.index === menu.activeIndex;
+export const MenuItem = forwardRef<HTMLButtonElement, DropdownButtonProps>(
+  ({ onClick, text, disabled, ...rest }, forwardedRef) => {
+    const menu = React.useContext(MenuContext);
+    const item = useListItem({ label: disabled ? null : text });
+    const isActive = item.index === menu.activeIndex;
 
-  return (
-    <ItemButton
-      ref={item.ref}
-      {...rest}
-      tabIndex={isActive ? 0 : -1}
-      type="button"
-      role="menuitem"
-      className="gap-3"
-      {...menu.getItemProps({
-        onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
-          onClick?.(event);
-          menu.setIsOpen(false);
-        },
-      })}
-      text={text}
-    />
-  );
-};
+    return (
+      <DropdownButton
+        {...rest}
+        ref={useMergeRefs([item.ref, forwardedRef])}
+        tabIndex={isActive ? 0 : -1}
+        type="button"
+        role="menuitem"
+        className="MenuItem gap-3"
+        {...menu.getItemProps({
+          onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+            onClick?.(event);
+            menu.setIsOpen(false);
+          },
+        })}
+        text={text}
+      />
+    );
+  },
+);
 
 MenuItem.displayName = "MenuItem";

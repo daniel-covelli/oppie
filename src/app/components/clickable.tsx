@@ -1,9 +1,13 @@
 import clsx from "clsx";
 import React, { forwardRef } from "react";
 import { type ButtonHTMLAttributes } from "react";
+import {
+  type PolymorphicRef,
+  type PolymorphicComponentProp,
+} from "~/definitions/plymorphic-component";
 
 export interface DropdownButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
   icon: React.ComponentType;
   text: string;
   description?: string;
@@ -15,7 +19,7 @@ const TileButton = forwardRef<HTMLButtonElement, DropdownButtonProps>(
       <button
         ref={ref}
         className={clsx(
-          "flex flex-row items-center gap-3 rounded p-2 hover:bg-slate-600",
+          "flex flex-row items-center gap-3 rounded p-2 outline-none hover:bg-slate-600 focus:bg-slate-600",
           className,
         )}
         {...props}
@@ -67,3 +71,29 @@ export const DropdownButton = forwardRef<
 });
 
 DropdownButton.displayName = "DropdownButton";
+
+const IconButton = forwardRef(
+  <T extends React.ElementType = "button">(
+    { className, children, as, ...rest }: PolymorphicComponentProp<T>,
+    ref?: PolymorphicRef<T>,
+  ) => {
+    const Component = as ?? "button";
+    return (
+      <Component
+        ref={ref}
+        className={clsx(
+          "mb-0 rounded p-1 text-slate-300 transition-colors duration-75 hover:bg-slate-600",
+
+          className,
+        )}
+        {...rest}
+      >
+        {children}
+      </Component>
+    );
+  },
+);
+
+IconButton.displayName = "IconButton";
+
+export default IconButton;

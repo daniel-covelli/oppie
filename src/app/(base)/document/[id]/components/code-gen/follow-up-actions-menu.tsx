@@ -4,44 +4,27 @@ import { api } from "~/trpc/react";
 import { useComponentFocusHandlerState } from "../utils";
 import CloseIcon from "~/app/components/svgs/close";
 import RetryIcon from "~/app/components/svgs/retry";
-import { Menu, MenuItem } from "~/app/components/modal/menu";
+import {
+  type ControlledMenuProps,
+  Menu,
+  MenuContent,
+  MenuItem,
+} from "~/app/components/modal/menu";
 
-export const useDeleteComponent = ({
-  setStream,
-  newCodeComponentId,
-  fileId,
-}: {
-  setStream: Dispatch<SetStateAction<string>>;
-  newCodeComponentId: string;
+interface FollowUpActionsMenu extends ControlledMenuProps {
   fileId: string;
-}) => {
-  const utils = api.useUtils();
-  const deleteComponent = api.component.delete.useMutation({
-    onSuccess: async () => {
-      await utils.file.getFile.invalidate({ id: fileId });
-    },
-  });
-  return {
-    handleDeleteComponent: () => {
-      setStream("");
-      if (newCodeComponentId) {
-        deleteComponent.mutate({ id: newCodeComponentId });
-      }
-    },
-  };
-};
+  newCodeComponentId: string;
+  stream: string;
+  setStream: Dispatch<SetStateAction<string>>;
+}
 
 export default function FollowUpActionsMenu({
   fileId,
   newCodeComponentId,
   stream,
   setStream,
-}: {
-  fileId: string;
-  newCodeComponentId: string;
-  stream: string;
-  setStream: Dispatch<SetStateAction<string>>;
-}) {
+  ...menuProps
+}: FollowUpActionsMenu) {
   const { updateComponentsState } = useComponentFocusHandlerState();
 
   const utils = api.useUtils();
@@ -74,43 +57,52 @@ export default function FollowUpActionsMenu({
     },
   });
 
-  const { handleDeleteComponent } = useDeleteComponent({
-    fileId,
-    setStream,
-    newCodeComponentId,
+  const deleteComponent = api.component.delete.useMutation({
+    onSuccess: async () => {
+      await utils.file.getFile.invalidate({ id: fileId });
+    },
   });
 
+  const handleDeleteComponent = () => {
+    setStream("");
+    if (newCodeComponentId) {
+      deleteComponent.mutate({ id: newCodeComponentId });
+    }
+  };
+
   return (
-    <Menu>
-      {stream.includes("<code>") && (
+    <Menu {...menuProps} handleOutsidePress={handleDeleteComponent}>
+      <MenuContent>
+        {stream.includes("<code>") && (
+          <MenuItem
+            text="Accept"
+            icon={() => <CheckMark className="size-3" />}
+            onClick={() => {
+              if (newCodeComponentId) {
+                updateComponent.mutate({
+                  id: newCodeComponentId,
+                  fileId: fileId,
+                  content: stream,
+                  type: "CODE",
+                });
+                setStream("");
+              }
+            }}
+          />
+        )}
         <MenuItem
-          text="Accept"
-          icon={() => <CheckMark className="size-3" />}
+          text="Decline"
+          icon={() => <CloseIcon className="size-3" />}
+          onClick={handleDeleteComponent}
+        />
+        <MenuItem
+          text="Try again"
+          icon={() => <RetryIcon className="size-3" />}
           onClick={() => {
-            if (newCodeComponentId) {
-              updateComponent.mutate({
-                id: newCodeComponentId,
-                fileId: fileId,
-                content: stream,
-                type: "CODE",
-              });
-              setStream("");
-            }
+            console.log("retry");
           }}
         />
-      )}
-      <MenuItem
-        text="Decline"
-        icon={() => <CloseIcon className="size-3" />}
-        onClick={handleDeleteComponent}
-      />
-      <MenuItem
-        text="Try again"
-        icon={() => <RetryIcon className="size-3" />}
-        onClick={() => {
-          console.log("retry");
-        }}
-      />
+      </MenuContent>
     </Menu>
   );
 }

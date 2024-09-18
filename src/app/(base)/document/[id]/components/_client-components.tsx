@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, type PropsWithChildren } from "react";
+import { Fragment } from "react";
 import { api, type RouterInputs, type RouterOutputs } from "~/trpc/react";
 import InlineInput from "./inline-input";
 
@@ -97,14 +97,16 @@ export default function FileContent({
   );
 }
 
-export function InlineWrapper({
+interface InlineWrapperProps extends React.PropsWithChildren {
+  cta?: React.ComponentType;
+  className?: string;
+}
+
+export const InlineWrapper = ({
   children,
   cta: Cta = () => <Fragment />,
   className,
-}: PropsWithChildren<{
-  cta?: React.ComponentType;
-  className?: string;
-}>) {
+}: InlineWrapperProps) => {
   return (
     <div
       className={clsx("group grid grid-cols-[25px_auto] content-center gap-3")}
@@ -115,4 +117,4 @@ export function InlineWrapper({
       <div className={className}>{children}</div>
     </div>
   );
-}
+};

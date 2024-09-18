@@ -25,7 +25,7 @@ export const useComponentFocusHandlerState = create<State & Action>((set) => ({
 }));
 
 export const useComponentFocusHandler = (
-  initialComponents: RouterOutputs["file"]["getFile"]["components"],
+  initialComponents?: RouterOutputs["file"]["getFile"]["components"],
 ) => {
   const {
     components,
@@ -35,7 +35,9 @@ export const useComponentFocusHandler = (
   } = useComponentFocusHandlerState();
 
   useEffect(() => {
-    updateComponentsState(initialComponents);
+    if (initialComponents) {
+      updateComponentsState(initialComponents);
+    }
   }, [initialComponents, updateComponentsState]);
 
   const lastComponentRef = useRef<HTMLInputElement>(null);
