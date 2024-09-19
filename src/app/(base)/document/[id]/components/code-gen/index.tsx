@@ -36,7 +36,13 @@ export default function CodeGen({
       input,
       fileId: file.id,
     },
-    { initialData: undefined, refetchOnMount: false, enabled: false },
+    {
+      // initialData: undefined,
+      refetchOnMount: false,
+      enabled: false,
+      gcTime: 0,
+      // manual: true,
+    },
   );
 
   const [isPromptingOpen, setIsPromptingOpen] = useState(false);
@@ -51,10 +57,10 @@ export default function CodeGen({
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isRefetching) {
+    if (isRefetching || called) {
       contentRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [isRefetching, stream]);
+  }, [called, isRefetching]);
 
   useEffect(() => {
     if (streamData && streamData?.length > 0) {
@@ -62,8 +68,12 @@ export default function CodeGen({
     }
   }, [streamData]);
 
-  const { isMenuOpen, setIsMenuOpen, setAnchorRef, anchorRef } =
+  const { isMenuOpen, setIsMenuOpen, setMenuAnchorRef, menuAnchorRef } =
     useControlledMenu();
+
+  const [modalAnchorRef, setModalAnchorRef] = useState<HTMLElement | null>(
+    null,
+  );
 
   return (
     <>
@@ -77,7 +87,7 @@ export default function CodeGen({
 
       {file.codeOutputType && (called || !!stream) && (
         <InlineWrapper>
-          <div ref={setAnchorRef}>
+          <div ref={setMenuAnchorRef}>
             {called && !stream && (
               <div className="h-96 w-full animate-pulse rounded-lg bg-slate-700" />
             )}
@@ -92,18 +102,26 @@ export default function CodeGen({
           </div>
         </InlineWrapper>
       )}
+      <div ref={setModalAnchorRef} className="ml-[37px] bg-slate-100" />
       <FollowUpActionsMenu
         fileId={file.id}
         setStream={setStream}
         stream={stream}
         open={isMenuOpen}
         setOpen={setIsMenuOpen}
-        anchorRef={anchorRef}
+        anchorRef={menuAnchorRef}
         newCodeComponentId={newCodeComponentId}
+        setIsPromptingOpen={setIsPromptingOpen}
       />
 
-      <Dialog onOpenChange={setIsPromptingOpen} open={isPromptingOpen}>
-        <DialogContent className="ml-[37px] rounded border border-slate-600 bg-slate-750 p-2 duration-75 ease-out">
+      <Dialog
+        anchorRef={modalAnchorRef}
+        setOpen={setIsPromptingOpen}
+        open={isPromptingOpen}
+        handleOutsidePress={() => setStream("")}
+        placement="bottom-start"
+      >
+        <DialogContent className="rounded border border-slate-600 bg-slate-750 p-2">
           {!file.codeOutputType ? (
             <Fragment />
           ) : (
@@ -115,6 +133,8 @@ export default function CodeGen({
                 className="flex flex-row items-end"
                 onSubmit={async (e) => {
                   e.preventDefault();
+                  setIsPromptingOpen(false);
+                  setStream("");
                   setCalled(true);
                   const component = await addEmptyComponent.mutateAsync({
                     fileId: file.id,
@@ -128,7 +148,6 @@ export default function CodeGen({
                 }}
               >
                 <textarea
-                  tabIndex={-1}
                   className={clsx(
                     `mr-2 w-full resize-none bg-transparent text-lg focus:outline-none`,
                   )}
@@ -136,13 +155,19 @@ export default function CodeGen({
                   value={input}
                   rows={3}
                   onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      e.currentTarget.form?.requestSubmit();
+                    }
+                  }}
                 />
-
                 <Button
                   as={CloseButton}
                   type="submit"
                   variant="filled"
                   color="secondary"
+                  onClick={() => setIsPromptingOpen(false)}
                 >
                   <Submit className="size-4" />
                 </Button>

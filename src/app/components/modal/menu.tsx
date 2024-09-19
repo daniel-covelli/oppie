@@ -3,14 +3,15 @@ import {
   flip,
   FloatingFocusManager,
   FloatingList,
+  FloatingOverlay,
   FloatingPortal,
   offset,
-  type Placement,
   useClick,
   useDismiss,
   useFloating,
   type UseFloatingReturn,
   useInteractions,
+  type UseInteractionsReturn,
   useListItem,
   useListNavigation,
   useMergeRefs,
@@ -20,7 +21,6 @@ import {
 import {
   type PropsWithChildren,
   useRef,
-  type HTMLProps,
   useMemo,
   useState,
   useContext,
@@ -29,66 +29,45 @@ import {
 } from "react";
 import { DropdownButton, type DropdownButtonProps } from "../clickable";
 import React from "react";
-import { type PolymorphicComponentProp } from "~/definitions/plymorphic-component";
+import {
+  type PolymorphicRef,
+  type PolymorphicComponentProp,
+} from "~/definitions/plymorphic-component";
 import clsx from "clsx";
+import { type FloatingOptions } from "~/definitions/modals";
 
 interface MenuContextType {
-  getItemProps: (
-    userProps?: React.HTMLProps<HTMLElement>,
-  ) => Record<string, unknown>;
   activeIndex: number | null;
   isOpen: boolean;
   setIsOpen: (val: boolean) => void;
-  getFloatingProps: (
-    userProps?: HTMLProps<HTMLElement>,
-  ) => Record<string, unknown>;
-  setFloating: UseFloatingReturn["refs"]["setFloating"];
-  setReference: UseFloatingReturn["refs"]["setReference"];
   listRef: React.MutableRefObject<(HTMLButtonElement | null)[]>;
   labelsRef: React.MutableRefObject<(string | null)[]>;
-  context?: UseFloatingReturn["context"];
-  getReferenceProps: ReturnType<typeof useInteractions>["getReferenceProps"];
-  floatingStyles: UseFloatingReturn["floatingStyles"];
+  controller: UseFloatingReturn;
+  interactions: UseInteractionsReturn;
 }
 
 export const MenuContext = React.createContext<MenuContextType>({
-  getItemProps: () => ({}),
   activeIndex: null,
   isOpen: false,
   setIsOpen: () => ({}),
-  getFloatingProps: () => ({}),
-  setFloating: () => ({}),
   listRef: { current: [] },
   labelsRef: { current: [] },
-  context: undefined,
-  getReferenceProps: () => ({}),
-  setReference: () => ({}),
-  floatingStyles: {},
+  controller: {} as UseFloatingReturn,
+  interactions: {} as UseInteractionsReturn,
 });
 
 export function useControlledMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [anchorRef, setAnchorRef] = useState<HTMLElement | null>(null);
+  const [menuAnchorRef, setMenuAnchorRef] = useState<HTMLElement | null>(null);
   return useMemo(
     () => ({
       isMenuOpen,
       setIsMenuOpen,
-      anchorRef,
-      setAnchorRef,
+      menuAnchorRef,
+      setMenuAnchorRef,
     }),
-    [anchorRef, isMenuOpen],
+    [menuAnchorRef, isMenuOpen],
   );
-}
-
-export interface ControlledMenuProps {
-  open?: boolean;
-  setOpen?: (val: boolean) => void;
-  anchorRef?: HTMLElement | null;
-}
-export interface MenuOptions extends ControlledMenuProps {
-  initialOpen?: boolean;
-  placement?: Placement;
-  handleOutsidePress?: () => void;
 }
 
 export function useMenu({
@@ -98,13 +77,13 @@ export function useMenu({
   placement = "bottom-start",
   handleOutsidePress,
   anchorRef,
-}: MenuOptions) {
+}: FloatingOptions) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(initialOpen);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const open = controlledOpen ?? uncontrolledOpen;
   const setOpen = setControlledOpen ?? setUncontrolledOpen;
 
-  const { floatingStyles, refs, context } = useFloating({
+  const controller = useFloating({
     placement,
     open: open,
     middleware: [flip(), offset(5)],
@@ -119,6 +98,8 @@ export function useMenu({
     },
     whileElementsMounted: autoUpdate,
   });
+
+  const { context } = controller;
 
   const listRef = useRef<Array<HTMLButtonElement | null>>([]);
   const labelsRef = useRef<Array<string | null>>([]);
@@ -138,41 +119,32 @@ export function useMenu({
 
   const dismiss = useDismiss(context);
 
-  const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions(
-    [role, click, dismiss, listNavigation, typeahead],
-  );
+  const interactions = useInteractions([
+    role,
+    click,
+    dismiss,
+    listNavigation,
+    typeahead,
+  ]);
 
   return useMemo(
     () => ({
       activeIndex,
-      getItemProps,
       setIsOpen: setOpen,
       isOpen: open,
-      getFloatingProps,
-      setFloating: refs.setFloating,
-      setReference: refs.setReference,
       listRef,
-      context,
-      getReferenceProps,
-      floatingStyles,
       labelsRef,
+      interactions,
+      controller,
     }),
-    [
-      activeIndex,
-      getItemProps,
-      setOpen,
-      open,
-      getFloatingProps,
-      refs.setFloating,
-      refs.setReference,
-      context,
-      getReferenceProps,
-      floatingStyles,
-    ],
+    [activeIndex, interactions, setOpen, open, controller],
   );
 }
 
-export const Menu = ({ children, ...rest }: PropsWithChildren<MenuOptions>) => {
+export const Menu = ({
+  children,
+  ...rest
+}: PropsWithChildren<FloatingOptions>) => {
   const menuContext = useMenu(rest);
   return (
     <MenuContext.Provider value={menuContext}>{children}</MenuContext.Provider>
@@ -187,31 +159,42 @@ export const useMenuContext = () => {
   return context;
 };
 
-export const MenuTrigger = <T extends ElementType = "div">({
-  children,
-  as,
-  ...rest
-}: PolymorphicComponentProp<T, PropsWithChildren>) => {
-  const { setReference, getReferenceProps } = useMenuContext();
-  const Component = as ?? "div";
-  return (
-    <Component ref={setReference} {...rest} {...getReferenceProps()}>
-      {children}
-    </Component>
-  );
-};
+export const MenuTrigger = forwardRef(
+  <T extends ElementType = "div">(
+    { children, as, ...rest }: PolymorphicComponentProp<T, PropsWithChildren>,
+    forwardedRef?: PolymorphicRef<T>,
+  ) => {
+    const {
+      controller: { refs },
+      interactions: { getReferenceProps },
+    } = useMenuContext();
+    const Component = as ?? "div";
+    return (
+      <Component
+        ref={useMergeRefs([refs.setReference, forwardedRef])}
+        {...rest}
+        {...getReferenceProps()}
+      >
+        {children}
+      </Component>
+    );
+  },
+);
+
+MenuTrigger.displayName = "MenuTrigger";
 
 export const MenuContent = ({
   children,
   width = "sm",
   paddingScheme = "document",
-}: PropsWithChildren<{ width?: "sm" | "fit"; paddingScheme?: "document" }>) => {
+}: PropsWithChildren<{
+  width?: "sm" | "fit";
+  paddingScheme?: "document" | "none";
+}>) => {
   const {
     isOpen,
-    floatingStyles,
-    getFloatingProps,
-    context,
-    setFloating,
+    controller: { context, refs, floatingStyles },
+    interactions: { getFloatingProps },
     listRef,
     labelsRef,
   } = useMenuContext();
@@ -221,22 +204,30 @@ export const MenuContent = ({
   return (
     <FloatingList elementsRef={listRef} labelsRef={labelsRef}>
       {isOpen && (
-        <FloatingPortal>
-          <FloatingFocusManager context={context} modal={false}>
-            <div
-              className={clsx(
-                "Menu flex flex-col rounded border border-slate-600 bg-slate-750 p-1 focus:outline-none",
-                width === "sm" ? "w-40" : "w-fit",
-                paddingScheme && "ml-[37px]",
-              )}
-              ref={setFloating}
-              style={floatingStyles}
-              {...getFloatingProps()}
+        <>
+          <FloatingOverlay />
+          <FloatingPortal>
+            <FloatingFocusManager
+              context={context}
+              modal={false}
+              returnFocus={false}
+              visuallyHiddenDismiss
             >
-              {children}
-            </div>
-          </FloatingFocusManager>
-        </FloatingPortal>
+              <div
+                className={clsx(
+                  "flex flex-col rounded border border-slate-600 bg-slate-750 p-1 focus:outline-none",
+                  width === "sm" ? "w-40" : "w-fit",
+                  paddingScheme === "document" && "ml-[37px]",
+                )}
+                ref={refs.setFloating}
+                style={floatingStyles}
+                {...getFloatingProps()}
+              >
+                {children}
+              </div>
+            </FloatingFocusManager>
+          </FloatingPortal>
+        </>
       )}
     </FloatingList>
   );
@@ -244,9 +235,13 @@ export const MenuContent = ({
 
 export const MenuItem = forwardRef<HTMLButtonElement, DropdownButtonProps>(
   ({ onClick, text, disabled, ...rest }, forwardedRef) => {
-    const menu = React.useContext(MenuContext);
+    const {
+      interactions: { getItemProps },
+      activeIndex,
+      setIsOpen,
+    } = React.useContext(MenuContext);
     const item = useListItem({ label: disabled ? null : text });
-    const isActive = item.index === menu.activeIndex;
+    const isActive = item.index === activeIndex;
 
     return (
       <DropdownButton
@@ -256,10 +251,10 @@ export const MenuItem = forwardRef<HTMLButtonElement, DropdownButtonProps>(
         type="button"
         role="menuitem"
         className="MenuItem gap-3"
-        {...menu.getItemProps({
+        {...getItemProps({
           onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
             onClick?.(event);
-            menu.setIsOpen(false);
+            setIsOpen(false);
           },
         })}
         text={text}

@@ -6,24 +6,24 @@ import {
   useRole,
   useInteractions,
   useMergeRefs,
-  FloatingPortal,
   FloatingFocusManager,
-  FloatingOverlay,
   useId,
+  FloatingPortal,
+  size,
+  autoUpdate,
+  offset,
+  FloatingOverlay,
 } from "@floating-ui/react";
-import clsx from "clsx";
-
-interface DialogOptions {
-  initialOpen?: boolean;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
+import { type FloatingOptions } from "~/definitions/modals";
 
 export function useDialog({
   initialOpen = false,
   open: controlledOpen,
-  onOpenChange: setControlledOpen,
-}: DialogOptions = {}) {
+  setOpen: setControlledOpen,
+  anchorRef,
+  handleOutsidePress,
+  placement,
+}: FloatingOptions) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(initialOpen);
   const [labelId, setLabelId] = React.useState<string | undefined>();
   const [descriptionId, setDescriptionId] = React.useState<
@@ -34,10 +34,39 @@ export function useDialog({
   const setOpen = setControlledOpen ?? setUncontrolledOpen;
 
   const data = useFloating({
+    placement,
     open,
-    onOpenChange: setOpen,
-    placement: "left-start",
+    onOpenChange: (val, _, reason) => {
+      setOpen(val);
+      if (reason === "escape-key" || reason === "outside-press") {
+        handleOutsidePress?.();
+      }
+    },
+    elements: {
+      reference: anchorRef,
+    },
+    middleware: [
+      offset(4),
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          });
+        },
+      }),
+    ],
   });
+
+  React.useEffect(() => {
+    if (open && data.elements.reference && data.elements.floating) {
+      const cleanup = autoUpdate(
+        data.elements.reference,
+        data.elements.floating,
+        data.update,
+      );
+      return cleanup;
+    }
+  }, [open, data.elements.reference, data.elements.floating, data.update]);
 
   const context = data.context;
 
@@ -90,7 +119,7 @@ export function Dialog({
   ...options
 }: {
   children: React.ReactNode;
-} & DialogOptions) {
+} & FloatingOptions) {
   const dialog = useDialog(options);
   return (
     <DialogContext.Provider value={dialog}>{children}</DialogContext.Provider>
@@ -125,31 +154,39 @@ export const DialogTrigger = React.forwardRef<
 export const DialogContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLProps<HTMLDivElement>
->(function DialogContent({ className, ...props }, propRef) {
-  const { context: floatingContext, ...context } = useDialogContext();
+>(function DialogContent({ children, ...props }, propRef) {
+  const {
+    floatingStyles,
+    context: floatingContext,
+    ...context
+  } = useDialogContext();
   const ref = useMergeRefs([context.refs.setFloating, propRef]);
 
   if (!floatingContext.open) return null;
 
+  console.log(context.getFloatingProps(props));
   return (
-    <FloatingPortal>
-      <FloatingOverlay className="bg-black/50" lockScroll>
-        <FloatingFocusManager context={floatingContext}>
+    <>
+      <FloatingOverlay />
+      <FloatingPortal>
+        <FloatingFocusManager
+          returnFocus={false}
+          context={floatingContext}
+          modal={false}
+        >
           <div
             ref={ref}
+            style={floatingStyles}
             aria-labelledby={context.labelId}
             aria-describedby={context.descriptionId}
+            // className={className}
             {...context.getFloatingProps(props)}
-            className={clsx(
-              "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform",
-              className,
-            )}
           >
-            {props.children}
+            {children}
           </div>
         </FloatingFocusManager>
-      </FloatingOverlay>
-    </FloatingPortal>
+      </FloatingPortal>
+    </>
   );
 });
 

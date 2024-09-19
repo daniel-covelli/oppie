@@ -44,8 +44,8 @@ export default function FileContent({
   };
 
   return (
-    <>
-      <div className="mb-40 flex flex-col gap-1">
+    <div className="pb-40">
+      <div className="flex flex-col gap-1">
         <InlineWrapper>
           <InlineInput
             fileId={data.id}
@@ -90,10 +90,9 @@ export default function FileContent({
             </InlineWrapper>
           );
         })}
-
         <CodeGen file={data} />
       </div>
-    </>
+    </div>
   );
 }
 

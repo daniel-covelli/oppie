@@ -1,9 +1,7 @@
-import clsx from "clsx";
 import IconButton from "~/app/components/clickable";
 import {
   Menu,
   MenuContent,
-  MenuContext,
   MenuItem,
   MenuTrigger,
 } from "~/app/components/modal/menu";
@@ -107,55 +105,40 @@ export const AddComponentMenu = ({
 
   return (
     <Menu placement="top-start">
-      <MenuContext.Consumer>
-        {({ context }) => (
-          <>
-            <MenuTrigger
-              as="button"
-              disabled={context?.open}
-              className="group grid w-fit grid-cols-[25px_auto] items-center gap-3"
-            >
-              <IconButton
-                as="div"
-                className={clsx(
-                  "opacity-0 transition-opacity duration-75 group-hover:opacity-100",
-                  context?.open && "group-hover:opacity-0",
-                )}
-              >
-                <Plus className="size-4" />
-              </IconButton>
-              {loading ? (
-                <div className="h-7 w-52 rounded-md bg-slate-700" />
-              ) : (
-                <div
-                  className={clsx(
-                    "content-center text-left text-sm text-slate-400 transition-colors duration-75 hover:text-slate-300",
-                    context?.open && "hover:text-slate-400",
-                  )}
-                >
-                  Add a component
-                </div>
-              )}
-            </MenuTrigger>
-
-            <MenuContent width="fit">
-              {...codeOptionsArray}
-              <MenuItem
-                text="Text"
-                description="Add a text block"
-                icon={() => <TextIcon className="size-5" />}
-                onClick={() => handleNonCodeComponent("BODY")}
-              />
-              <MenuItem
-                text="Heading"
-                description="Add a heading block"
-                icon={() => <HeadingIcon className="size-5" />}
-                onClick={() => handleNonCodeComponent("HEADING")}
-              />
-            </MenuContent>
-          </>
+      <MenuTrigger
+        as="button"
+        className="group grid w-fit grid-cols-[25px_auto] items-center gap-3"
+      >
+        <IconButton
+          as="div"
+          className="opacity-0 transition-opacity duration-75 group-hover:opacity-100"
+        >
+          <Plus className="size-4" />
+        </IconButton>
+        {loading ? (
+          <div className="h-7 w-52 rounded-md bg-slate-700" />
+        ) : (
+          <div className="content-center text-left text-sm text-slate-400 transition-colors duration-75 hover:text-slate-300">
+            Add a component
+          </div>
         )}
-      </MenuContext.Consumer>
+      </MenuTrigger>
+
+      <MenuContent width="fit">
+        {...codeOptionsArray}
+        <MenuItem
+          text="Text"
+          description="Add a text block"
+          icon={() => <TextIcon className="size-5" />}
+          onClick={() => handleNonCodeComponent("BODY")}
+        />
+        <MenuItem
+          text="Heading"
+          description="Add a heading block"
+          icon={() => <HeadingIcon className="size-5" />}
+          onClick={() => handleNonCodeComponent("HEADING")}
+        />
+      </MenuContent>
     </Menu>
   );
 };

@@ -19,6 +19,7 @@ export default function CodeDisplay({
   const parsedValue = value.replace("<code>", "").replace("</code>", "");
   return (
     <CodeMirror
+      ref={null}
       readOnly
       value={parsedValue}
       extensions={[...extensions[type], EditorView.lineWrapping]}

@@ -4,18 +4,15 @@ import { api } from "~/trpc/react";
 import { useComponentFocusHandlerState } from "../utils";
 import CloseIcon from "~/app/components/svgs/close";
 import RetryIcon from "~/app/components/svgs/retry";
-import {
-  type ControlledMenuProps,
-  Menu,
-  MenuContent,
-  MenuItem,
-} from "~/app/components/modal/menu";
+import { Menu, MenuContent, MenuItem } from "~/app/components/modal/menu";
+import { type ControlledFloatingProps } from "~/definitions/modals";
 
-interface FollowUpActionsMenu extends ControlledMenuProps {
+interface FollowUpActionsMenu extends ControlledFloatingProps {
   fileId: string;
   newCodeComponentId: string;
   stream: string;
   setStream: Dispatch<SetStateAction<string>>;
+  setIsPromptingOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function FollowUpActionsMenu({
@@ -23,6 +20,7 @@ export default function FollowUpActionsMenu({
   newCodeComponentId,
   stream,
   setStream,
+  setIsPromptingOpen,
   ...menuProps
 }: FollowUpActionsMenu) {
   const { updateComponentsState } = useComponentFocusHandlerState();
@@ -72,7 +70,7 @@ export default function FollowUpActionsMenu({
 
   return (
     <Menu {...menuProps} handleOutsidePress={handleDeleteComponent}>
-      <MenuContent>
+      <MenuContent paddingScheme="none">
         {stream.includes("<code>") && (
           <MenuItem
             text="Accept"
@@ -99,7 +97,8 @@ export default function FollowUpActionsMenu({
           text="Try again"
           icon={() => <RetryIcon className="size-3" />}
           onClick={() => {
-            console.log("retry");
+            setIsPromptingOpen(true);
+            menuProps.setOpen?.(false);
           }}
         />
       </MenuContent>
