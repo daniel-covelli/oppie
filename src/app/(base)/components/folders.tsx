@@ -6,7 +6,7 @@ import ActionWrapper from "~/app/components/action-wrapper";
 import Plus from "~/app/components/svgs/plus";
 import AddTitleModal, {
   useOpenAddTitleModal,
-} from "~/app/components/modal/add-title-modal";
+} from "~/app/components/floating/add-title-modal";
 import IconButton from "~/app/components/icon-button";
 import { AlertDeleteFileOrFolder } from "./alert-delete-file-or-folder";
 

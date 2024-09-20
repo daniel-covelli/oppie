@@ -1,5 +1,5 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { useOpenAddTitleModal } from "./modal/add-title-modal";
+import { useOpenAddTitleModal } from "./floating/add-title-modal";
 import clsx from "clsx";
 import Plus from "./svgs/plus";
 import FolderPlus from "./svgs/folder-plus";

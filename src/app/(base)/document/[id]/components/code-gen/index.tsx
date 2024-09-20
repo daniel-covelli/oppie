@@ -5,12 +5,12 @@ import { useComponentFocusHandler } from "../utils";
 import { InlineWrapper } from "../_client-components";
 import FollowUpActionsMenu from "./follow-up-actions-menu";
 import { AddComponentMenu } from "./add-component-menu";
-import { useControlledMenu } from "~/app/components/modal/menu";
+import { useControlledMenu } from "~/app/components/floating/menu";
 import {
   Dialog,
   DialogContent,
   DialogHeading,
-} from "~/app/components/modal/dialog";
+} from "~/app/components/floating/dialog";
 import { CloseButton } from "@headlessui/react";
 import clsx from "clsx";
 import Submit from "~/app/components/svgs/submit";

@@ -2,7 +2,7 @@ import { Dialog, DialogPanel, DialogTitle, Textarea } from "@headlessui/react";
 import clsx from "clsx";
 import { type Dispatch, type FormEvent, type SetStateAction } from "react";
 import Button from "~/app/components/button";
-import Loading from "~/app/components/svgs/loading";
+import Spinner from "~/app/components/svgs/spinner";
 import Submit from "~/app/components/svgs/submit";
 import { api, type RouterOutputs } from "~/trpc/react";
 
@@ -96,7 +96,7 @@ export default function PromptModal({
                 color="secondary"
               >
                 {loading ? (
-                  <Loading className="size-4" />
+                  <Spinner className="size-4" />
                 ) : (
                   <Submit className="size-4" />
                 )}

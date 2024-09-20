@@ -4,7 +4,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeading,
-} from "~/app/components/modal/dialog";
+} from "./index";
 import Spinner from "~/app/components/svgs/spinner";
 import { type ControlledFloatingProps } from "~/definitions/modals";
 

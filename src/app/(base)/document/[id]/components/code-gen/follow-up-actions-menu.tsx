@@ -4,7 +4,7 @@ import { api } from "~/trpc/react";
 import { useComponentFocusHandlerState } from "../utils";
 import CloseIcon from "~/app/components/svgs/close";
 import RetryIcon from "~/app/components/svgs/retry";
-import { Menu, MenuContent, MenuItem } from "~/app/components/modal/menu";
+import { Menu, MenuContent, MenuItem } from "~/app/components/floating/menu";
 import { type ControlledFloatingProps } from "~/definitions/modals";
 
 interface FollowUpActionsMenu extends ControlledFloatingProps {

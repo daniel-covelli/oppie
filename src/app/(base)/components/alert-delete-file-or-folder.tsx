@@ -1,5 +1,5 @@
 import { z } from "zod";
-import AlertDialog from "./alert-dialog";
+import AlertDialog from "../../components/floating/dialog/alert-dialog";
 import { create } from "zustand";
 import { useState } from "react";
 import { api } from "~/trpc/react";

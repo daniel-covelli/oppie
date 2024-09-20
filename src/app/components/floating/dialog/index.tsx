@@ -15,7 +15,7 @@ import {
   FloatingOverlay,
 } from "@floating-ui/react";
 import { type FloatingOptions } from "~/definitions/modals";
-import { UIButton } from "../button";
+import { UIButton } from "../../button";
 import clsx from "clsx";
 
 export function useDialog({
@@ -170,7 +170,6 @@ export const DialogContent = React.forwardRef<
 
   if (!floatingContext.open) return null;
 
-  console.log(context.getFloatingProps(props));
   return (
     <>
       <FloatingOverlay

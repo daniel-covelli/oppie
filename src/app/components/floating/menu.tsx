@@ -24,15 +24,11 @@ import {
   useMemo,
   useState,
   useContext,
-  type ElementType,
   forwardRef,
 } from "react";
 import { DropdownButton, type DropdownButtonProps } from "../clickable";
 import React from "react";
-import {
-  type PolymorphicRef,
-  type PolymorphicComponentProp,
-} from "~/definitions/plymorphic-component";
+
 import clsx from "clsx";
 import { type FloatingOptions } from "~/definitions/modals";
 
@@ -159,27 +155,23 @@ export const useMenuContext = () => {
   return context;
 };
 
-export const MenuTrigger = forwardRef(
-  <T extends ElementType = "div">(
-    { children, ...rest }: PolymorphicComponentProp<T, PropsWithChildren>,
-    forwardedRef?: PolymorphicRef<T>,
-  ) => {
-    const {
-      controller: { refs },
-      interactions: { getReferenceProps },
-    } = useMenuContext();
+export const MenuTrigger = forwardRef<
+  HTMLButtonElement,
+  React.HTMLProps<HTMLButtonElement> & PropsWithChildren
+>(({ children, ...rest }, forwardedRef) => {
+  const {
+    controller: { refs },
+    interactions: { getReferenceProps },
+  } = useMenuContext();
 
-    return (
-      <button
-        ref={useMergeRefs([refs.setReference, forwardedRef])}
-        {...getReferenceProps()}
-        {...rest}
-      >
-        {children}
-      </button>
-    );
-  },
-);
+  const ref = useMergeRefs([refs.setReference, forwardedRef]);
+
+  return (
+    <button ref={ref} {...getReferenceProps(rest)}>
+      {children}
+    </button>
+  );
+});
 
 MenuTrigger.displayName = "MenuTrigger";
 
@@ -247,6 +239,7 @@ export const MenuItem = forwardRef<HTMLButtonElement, DropdownButtonProps>(
     return (
       <DropdownButton
         {...rest}
+        disabled={disabled}
         ref={useMergeRefs([item.ref, forwardedRef])}
         tabIndex={isActive ? 0 : -1}
         type="button"

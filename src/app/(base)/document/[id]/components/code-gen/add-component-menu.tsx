@@ -4,7 +4,7 @@ import {
   MenuContent,
   MenuItem,
   MenuTrigger,
-} from "~/app/components/modal/menu";
+} from "~/app/components/floating/menu";
 import Plus from "~/app/components/svgs/plus";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { useComponentFocusHandler } from "../utils";
