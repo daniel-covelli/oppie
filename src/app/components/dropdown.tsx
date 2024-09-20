@@ -4,10 +4,6 @@ import clsx from "clsx";
 import Plus from "./svgs/plus";
 import FolderPlus from "./svgs/folder-plus";
 import FilePlus from "./svgs/file-plus";
-import Options from "./svgs/options";
-import { useOpenAlertModal } from "./modal/alert-modal";
-import TrashSolid from "./svgs/trash-solid";
-import EditSolid from "./svgs/edit-solid";
 import React, { type Dispatch, type SetStateAction } from "react";
 import IconButton from "./icon-button";
 import { DropdownButton, type DropdownButtonProps } from "./clickable";
@@ -71,21 +67,21 @@ export default function DropDown({
 
 interface FolderTriggerProps {
   folderId: string;
-  setHovered: Dispatch<SetStateAction<boolean>>;
-  setIgnoreMouseOut: Dispatch<SetStateAction<boolean>>;
+  // setHovered: Dispatch<SetStateAction<boolean>>;
+  // setIgnoreMouseOut: Dispatch<SetStateAction<boolean>>;
 }
 
 export function AddButton({
   folderId,
-  setHovered,
-  setIgnoreMouseOut,
+  // setHovered,
+  // setIgnoreMouseOut,
 }: FolderTriggerProps) {
   const handleOpen = useOpenAddTitleModal();
 
   return (
     <>
       <DropDown
-        setIgnoreMouseOut={setIgnoreMouseOut}
+        // setIgnoreMouseOut={setIgnoreMouseOut}
         icon={() => <Plus className="size-4" />}
         options={[
           {
@@ -94,8 +90,8 @@ export function AddButton({
             icon: () => <FolderPlus className="size-4 text-slate-400" />,
             onClick: (e) => {
               handleOpen(e, { type: "folder", parentId: folderId });
-              setHovered(false);
-              setIgnoreMouseOut(false);
+              // setHovered(false);
+              // setIgnoreMouseOut(false);
             },
           },
           {
@@ -104,8 +100,8 @@ export function AddButton({
             icon: () => <FilePlus className="size-4 text-slate-400" />,
             onClick: (e) => {
               handleOpen(e, { type: "document", folderId });
-              setHovered(false);
-              setIgnoreMouseOut(false);
+              // setHovered(false);
+              // setIgnoreMouseOut(false);
             },
           },
         ]}
@@ -114,36 +110,34 @@ export function AddButton({
   );
 }
 
-export function OptionsButton({
-  folderId,
-  setHovered,
-  setIgnoreMouseOut,
-}: FolderTriggerProps) {
-  const handleOpen = useOpenAlertModal();
+// export function OptionsButton({
+//   folderId,
+//   setIgnoreMouseOut,
+// }: FolderTriggerProps) {
+//   const handleOpen = useOpenDeletFileOrFolderModal();
 
-  return (
-    <>
-      <DropDown
-        setIgnoreMouseOut={setIgnoreMouseOut}
-        icon={() => <Options className="size-4" />}
-        options={[
-          {
-            id: "Delete",
-            text: "Delete",
-            icon: () => <TrashSolid className="size-4 text-slate-400" />,
-            onClick: (e) => {
-              handleOpen(e, { type: "folder", folderId });
-              setHovered(false);
-            },
-          },
-          {
-            id: "Edit",
-            icon: () => <EditSolid className="size-4 text-slate-400" />,
-            disabled: true,
-            text: "Edit Name",
-          },
-        ]}
-      />
-    </>
-  );
-}
+//   return (
+//     <>
+//       <DropDown
+//         setIgnoreMouseOut={setIgnoreMouseOut}
+//         icon={() => <Options className="size-4" />}
+//         options={[
+//           {
+//             id: "Delete",
+//             text: "Delete",
+//             icon: () => <TrashSolid className="size-4 text-slate-400" />,
+//             onClick: (e) => {
+//               handleOpen(e, { type: "folder", folderId });
+//             },
+//           },
+//           {
+//             id: "Edit",
+//             icon: () => <EditSolid className="size-4 text-slate-400" />,
+//             disabled: true,
+//             text: "Edit Name",
+//           },
+//         ]}
+//       />
+//     </>
+//   );
+// }

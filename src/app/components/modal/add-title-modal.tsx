@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { api } from "~/trpc/react";
 import { Button, Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
-import Loading from "../svgs/loading";
+import Loading from "../svgs/spinner";
 
 const FolderSchema = z.object({
   type: z.literal("folder"),

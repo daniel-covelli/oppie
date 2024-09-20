@@ -4,7 +4,7 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
-import Loading from "../svgs/loading";
+import Loading from "../svgs/spinner";
 import { create } from "zustand";
 import { z } from "zod";
 import { useState } from "react";

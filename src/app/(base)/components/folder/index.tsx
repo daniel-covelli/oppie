@@ -6,11 +6,12 @@ import FolderOpenSolid from "~/app/components/svgs/folder-open-solid";
 
 import Chevron from "~/app/components/svgs/chevron";
 import { usePathname } from "next/navigation";
-import ActionWrapper from "~/app/components/action-wrapper";
 import Link from "next/link";
-import Files from "./files";
 import { type RouterOutputs } from "~/trpc/react";
-import { AddButton, OptionsButton } from "~/app/components/dropdown";
+import { AddButton } from "~/app/components/dropdown";
+import Files from "../files";
+import OptionsMenu from "./options-menu";
+import clsx from "clsx";
 
 export type RecursiveFolderProps = Omit<
   RouterOutputs["folder"]["getFolders"][0],
@@ -64,44 +65,42 @@ export default function Folder({ folder }: { folder: RecursiveFolderProps }) {
 
   return (
     <>
-      <ActionWrapper
-        active={isActive}
-        preface={({ hovered }) => (
-          <button
-            className="rounded p-1 hover:bg-slate-600"
-            onClick={() => handleToggle()}
-          >
-            {hovered && hasChildren ? (
-              <Chevron className="size-4 -rotate-90 p-0.5 text-slate-300" />
-            ) : opened ? (
+      <div
+        className={clsx(
+          isActive && "bg-slate-800",
+          "group flex h-8 flex-row items-center justify-center gap-2 rounded-lg p-1 pl-1.5 hover:bg-slate-700",
+        )}
+      >
+        <button
+          className="rounded p-1 hover:bg-slate-600"
+          onClick={() => handleToggle()}
+        >
+          <div className="group-hover:hidden">
+            {opened ? (
               <FolderOpenSolid className="size-4" />
             ) : (
               <FolderClosed className="size-4" />
             )}
-          </button>
-        )}
-        actions={({ setHovered, setIgnoreMouseOut }) => (
-          <>
-            <OptionsButton
-              folderId={folder.id}
-              setHovered={setHovered}
-              setIgnoreMouseOut={setIgnoreMouseOut}
-            />
-            <AddButton
-              folderId={folder.id}
-              setHovered={setHovered}
-              setIgnoreMouseOut={setIgnoreMouseOut}
-            />
-          </>
-        )}
-      >
+          </div>
+          <div className="hidden group-hover:flex">
+            {hasChildren ? (
+              <Chevron className="size-4 -rotate-90 p-0.5 text-slate-300" />
+            ) : (
+              <FolderClosed className="size-4" />
+            )}
+          </div>
+        </button>
         <Link
           className="flex-1 truncate text-left text-lg"
           href={`/folder/${folder.id}`}
         >
           {folder.heading.content}
         </Link>
-      </ActionWrapper>
+        <div className="hidden group-hover:flex">
+          <OptionsMenu folderId={folder.id} />
+          <AddButton folderId={folder.id} />
+        </div>
+      </div>
 
       {opened && hasChildren && (
         <div className="flex flex-col pl-3">

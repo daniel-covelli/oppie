@@ -20,12 +20,12 @@ import { ResponseType } from "~/definitions";
 import HomeSolid from "../components/svgs/home-solid";
 import Interactive from "../components/interactive";
 import { myTheme } from "../_configs";
-import { type RecursiveFolderProps } from "./_client-components/folder";
+import { type RecursiveFolderProps } from "./components/folder";
 import Chevron from "../components/svgs/chevron";
 import Link from "next/link";
 import FolderOpenSolid from "../components/svgs/folder-open-solid";
 import FileIconSolid from "../components/svgs/file-solid";
-import Loading from "../components/svgs/loading";
+import Loading from "../components/svgs/spinner";
 
 export function SignOutButton() {
   return <Button onClick={() => signOut()}>Sign out</Button>;

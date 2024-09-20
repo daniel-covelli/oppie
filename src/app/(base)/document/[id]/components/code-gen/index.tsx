@@ -37,11 +37,9 @@ export default function CodeGen({
       fileId: file.id,
     },
     {
-      // initialData: undefined,
       refetchOnMount: false,
       enabled: false,
       gcTime: 0,
-      // manual: true,
     },
   );
 

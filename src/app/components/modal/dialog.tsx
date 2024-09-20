@@ -15,6 +15,8 @@ import {
   FloatingOverlay,
 } from "@floating-ui/react";
 import { type FloatingOptions } from "~/definitions/modals";
+import { UIButton } from "../button";
+import clsx from "clsx";
 
 export function useDialog({
   initialOpen = false,
@@ -47,13 +49,14 @@ export function useDialog({
     },
     middleware: [
       offset(4),
-      size({
-        apply({ rects, elements }) {
-          Object.assign(elements.floating.style, {
-            width: `${rects.reference.width}px`,
-          });
-        },
-      }),
+      anchorRef &&
+        size({
+          apply({ rects, elements }) {
+            Object.assign(elements.floating.style, {
+              width: `${rects.reference.width}px`,
+            });
+          },
+        }),
     ],
   });
 
@@ -153,8 +156,11 @@ export const DialogTrigger = React.forwardRef<
 
 export const DialogContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLProps<HTMLDivElement>
->(function DialogContent({ children, ...props }, propRef) {
+  React.HTMLProps<HTMLDivElement> & { isCentered?: boolean }
+>(function DialogContent(
+  { isCentered, children, className, ...props },
+  propRef,
+) {
   const {
     floatingStyles,
     context: floatingContext,
@@ -167,7 +173,10 @@ export const DialogContent = React.forwardRef<
   console.log(context.getFloatingProps(props));
   return (
     <>
-      <FloatingOverlay />
+      <FloatingOverlay
+        className={clsx(isCentered && "z-10 bg-slate-900/60")}
+        lockScroll={isCentered}
+      />
       <FloatingPortal>
         <FloatingFocusManager
           returnFocus={false}
@@ -179,7 +188,11 @@ export const DialogContent = React.forwardRef<
             style={floatingStyles}
             aria-labelledby={context.labelId}
             aria-describedby={context.descriptionId}
-            // className={className}
+            className={clsx(
+              "z-20",
+              isCentered && "absolute inset-0 mx-auto my-auto h-fit",
+              className,
+            )}
             {...context.getFloatingProps(props)}
           >
             {children}
@@ -235,9 +248,19 @@ export const DialogDescription = React.forwardRef<
 export const DialogClose = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement>
->(function DialogClose(props, ref) {
+>(function DialogClose({ onClick, ...props }, ref) {
   const { setOpen } = useDialogContext();
   return (
-    <button type="button" {...props} ref={ref} onClick={() => setOpen(false)} />
+    <UIButton asChild color="danger">
+      <button
+        type="button"
+        {...props}
+        ref={ref}
+        onClick={(e) => {
+          onClick?.(e);
+          setOpen(false);
+        }}
+      />
+    </UIButton>
   );
 });

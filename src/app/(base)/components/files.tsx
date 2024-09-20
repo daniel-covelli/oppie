@@ -1,12 +1,12 @@
 import { usePathname } from "next/navigation";
 import { type RecursiveFolderProps } from "./folder";
-import { useOpenAlertModal } from "~/app/components/modal/alert-modal";
 import ActionWrapper from "~/app/components/action-wrapper";
 import clsx from "clsx";
 import TrashSolid from "~/app/components/svgs/trash-solid";
 import Link from "next/link";
 import FileIcon from "~/app/components/svgs/file";
 import FileIconSolid from "~/app/components/svgs/file-solid";
+import { useOpenDeletFileOrFolderModal } from "./alert-delete-file-or-folder";
 
 export default function Files({
   files,
@@ -14,7 +14,7 @@ export default function Files({
   files: RecursiveFolderProps["files"];
 }) {
   const pathname = usePathname();
-  const handleOpen = useOpenAlertModal();
+  const handleOpen = useOpenDeletFileOrFolderModal();
 
   return files.map((file) => {
     const isActive = pathname.includes(file.id);

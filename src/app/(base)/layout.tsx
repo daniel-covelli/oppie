@@ -3,7 +3,7 @@ import BrandText from "../components/brand-text";
 import { BreadCrumbs, SignOutButton } from "./client-components";
 
 import Link from "next/link";
-import Folders from "./_client-components/folders";
+import Folders from "./components/folders";
 import { getSessionOrRedirect } from "~/server/ssr-utils";
 
 export default async function Layout({

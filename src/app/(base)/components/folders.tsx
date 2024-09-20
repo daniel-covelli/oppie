@@ -7,8 +7,8 @@ import Plus from "~/app/components/svgs/plus";
 import AddTitleModal, {
   useOpenAddTitleModal,
 } from "~/app/components/modal/add-title-modal";
-import AlertModal from "~/app/components/modal/alert-modal";
 import IconButton from "~/app/components/icon-button";
+import { AlertDeleteFileOrFolder } from "./alert-delete-file-or-folder";
 
 export default function Folders({
   initialFolders,
@@ -23,15 +23,14 @@ export default function Folders({
   return (
     <>
       <AddTitleModal />
-      <AlertModal />
+      <AlertDeleteFileOrFolder />
       <div className="flex flex-col">
         <div className="pl-2.5 pr-2">
           <ActionWrapper
-            actions={({ setHovered }) => (
+            actions={() => (
               <IconButton
                 onClick={(e) => {
                   handleOpen(e, { type: "folder" });
-                  setHovered(false);
                 }}
               >
                 <Plus className="size-4" />

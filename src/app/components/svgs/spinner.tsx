@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-export default function Loading({ className }: { className?: string }) {
+export default function Spinner({ className }: { className?: string }) {
   return (
     <svg
       aria-hidden="true"

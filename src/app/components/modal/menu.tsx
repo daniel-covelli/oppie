@@ -4,12 +4,12 @@ import {
   FloatingFocusManager,
   FloatingList,
   FloatingOverlay,
-  FloatingPortal,
   offset,
   useClick,
   useDismiss,
   useFloating,
   type UseFloatingReturn,
+  useId,
   useInteractions,
   type UseInteractionsReturn,
   useListItem,
@@ -161,22 +161,22 @@ export const useMenuContext = () => {
 
 export const MenuTrigger = forwardRef(
   <T extends ElementType = "div">(
-    { children, as, ...rest }: PolymorphicComponentProp<T, PropsWithChildren>,
+    { children, ...rest }: PolymorphicComponentProp<T, PropsWithChildren>,
     forwardedRef?: PolymorphicRef<T>,
   ) => {
     const {
       controller: { refs },
       interactions: { getReferenceProps },
     } = useMenuContext();
-    const Component = as ?? "div";
+
     return (
-      <Component
+      <button
         ref={useMergeRefs([refs.setReference, forwardedRef])}
-        {...rest}
         {...getReferenceProps()}
+        {...rest}
       >
         {children}
-      </Component>
+      </button>
     );
   },
 );
@@ -186,7 +186,7 @@ MenuTrigger.displayName = "MenuTrigger";
 export const MenuContent = ({
   children,
   width = "sm",
-  paddingScheme = "document",
+  paddingScheme,
 }: PropsWithChildren<{
   width?: "sm" | "fit";
   paddingScheme?: "document" | "none";
@@ -199,34 +199,35 @@ export const MenuContent = ({
     labelsRef,
   } = useMenuContext();
 
+  const ref = useMergeRefs([refs.setFloating]);
+  const id = useId();
+
   if (!context) return;
 
   return (
     <FloatingList elementsRef={listRef} labelsRef={labelsRef}>
       {isOpen && (
         <>
-          <FloatingOverlay />
-          <FloatingPortal>
+          <FloatingOverlay className="z-10">
             <FloatingFocusManager
               context={context}
-              modal={false}
-              returnFocus={false}
-              visuallyHiddenDismiss
+              // modal={false}
+              // returnFocus={false}
             >
               <div
+                ref={ref}
                 className={clsx(
-                  "flex flex-col rounded border border-slate-600 bg-slate-750 p-1 focus:outline-none",
+                  "z-20 rounded border border-slate-600 bg-slate-750 p-1 focus:outline-none",
                   width === "sm" ? "w-40" : "w-fit",
                   paddingScheme === "document" && "ml-[37px]",
                 )}
-                ref={refs.setFloating}
                 style={floatingStyles}
                 {...getFloatingProps()}
               >
                 {children}
               </div>
             </FloatingFocusManager>
-          </FloatingPortal>
+          </FloatingOverlay>
         </>
       )}
     </FloatingList>
@@ -250,7 +251,7 @@ export const MenuItem = forwardRef<HTMLButtonElement, DropdownButtonProps>(
         tabIndex={isActive ? 0 : -1}
         type="button"
         role="menuitem"
-        className="MenuItem gap-3"
+        className="gap-3"
         {...getItemProps({
           onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
             onClick?.(event);
