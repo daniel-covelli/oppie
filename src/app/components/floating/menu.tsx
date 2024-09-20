@@ -9,7 +9,6 @@ import {
   useDismiss,
   useFloating,
   type UseFloatingReturn,
-  useId,
   useInteractions,
   type UseInteractionsReturn,
   useListItem,
@@ -192,7 +191,6 @@ export const MenuContent = ({
   } = useMenuContext();
 
   const ref = useMergeRefs([refs.setFloating]);
-  const id = useId();
 
   if (!context) return;
 

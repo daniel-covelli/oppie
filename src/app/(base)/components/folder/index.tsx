@@ -6,12 +6,11 @@ import FolderOpenSolid from "~/app/components/svgs/folder-open-solid";
 
 import Chevron from "~/app/components/svgs/chevron";
 import { usePathname } from "next/navigation";
-import Link from "next/link";
 import { type RouterOutputs } from "~/trpc/react";
-import { AddButton } from "~/app/components/dropdown";
 import Files from "../files";
 import OptionsMenu from "./options-menu";
-import clsx from "clsx";
+import AddFolderOrFileMenu from "./add-folder-or-file-menu";
+import FileFolderWrapper from "../file-folder-wrapper";
 
 export type RecursiveFolderProps = Omit<
   RouterOutputs["folder"]["getFolders"][0],
@@ -65,43 +64,32 @@ export default function Folder({ folder }: { folder: RecursiveFolderProps }) {
 
   return (
     <>
-      <div
-        className={clsx(
-          isActive && "bg-slate-800",
-          "group flex h-8 flex-row items-center justify-center gap-2 rounded-lg p-1 pl-1.5 hover:bg-slate-700",
-        )}
-      >
-        <button
-          className="rounded p-1 hover:bg-slate-600"
-          onClick={() => handleToggle()}
-        >
-          <div className="group-hover:hidden">
-            {opened ? (
-              <FolderOpenSolid className="size-4" />
-            ) : (
-              <FolderClosed className="size-4" />
-            )}
-          </div>
-          <div className="hidden group-hover:flex">
-            {hasChildren ? (
-              <Chevron className="size-4 -rotate-90 p-0.5 text-slate-300" />
-            ) : (
-              <FolderClosed className="size-4" />
-            )}
-          </div>
-        </button>
-        <Link
-          className="flex-1 truncate text-left text-lg"
-          href={`/folder/${folder.id}`}
-        >
-          {folder.heading.content}
-        </Link>
-        <div className="hidden group-hover:flex">
-          <OptionsMenu folderId={folder.id} />
-          <AddButton folderId={folder.id} />
-        </div>
-      </div>
-
+      <FileFolderWrapper
+        active={isActive}
+        left={{
+          onClick: handleToggle,
+          defaultIcon: opened ? (
+            <FolderOpenSolid className="size-4" />
+          ) : (
+            <FolderClosed className="size-4" />
+          ),
+          hoveredIcon: hasChildren ? (
+            <Chevron className="size-4 -rotate-90 p-0.5" />
+          ) : (
+            <FolderClosed className="size-4" />
+          ),
+        }}
+        heading={{
+          children: folder.heading.content,
+          href: `/folder/${folder.id}`,
+        }}
+        right={
+          <>
+            <OptionsMenu folderId={folder.id} />
+            <AddFolderOrFileMenu folderId={folder.id} />
+          </>
+        }
+      />
       {opened && hasChildren && (
         <div className="flex flex-col pl-3">
           {folder.children?.map((children) => (

@@ -44,7 +44,6 @@ export const useOpenDeletFileOrFolderModal = () => {
   const { updateIsOpenState, updateFileOrDocumentDataState } =
     useAlertModalStore((store) => store);
   const handleOpen = (
-    _: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     fileOrDocumentData: z.infer<typeof FolderDocumentSchema>,
   ) => {
     updateIsOpenState(true);

@@ -28,8 +28,8 @@ export default function OptionsMenu({ folderId }: { folderId: string }) {
         <MenuItem
           text="Delete"
           icon={() => <TrashSolid className="size-4 text-slate-400" />}
-          onClick={(e) => {
-            handleOpen(e, { type: "folder", folderId });
+          onClick={() => {
+            handleOpen({ type: "folder", folderId });
           }}
         />
       </MenuContent>
