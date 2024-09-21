@@ -12,7 +12,7 @@ import { type ControlledFloatingProps } from "~/definitions/modals";
 
 interface PromptDialogProps extends ControlledFloatingProps {
   prompt: string;
-  onPromptChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onPromptChange: (text: string) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
   handleDialogCanceled: () => void;
   loading: boolean;
@@ -47,7 +47,7 @@ export default function PromptDialog({
               placeholder="Generate..."
               value={prompt}
               rows={3}
-              onChange={onPromptChange}
+              onChange={(e) => onPromptChange(e.currentTarget.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

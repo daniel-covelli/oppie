@@ -137,7 +137,7 @@ export default function CodeGen({
         open={isPromptingOpen}
         setOpen={setIsPromptingOpen}
         prompt={prompt}
-        onPromptChange={(e) => setPrompt(e.target.value)}
+        onPromptChange={setPrompt}
         handleSubmit={handlePromptSubmit}
         handleDialogCanceled={() => {
           setPrompt("");
