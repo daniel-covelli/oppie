@@ -1,10 +1,11 @@
-import React from "react";
-import { create } from "zustand";
-import { useRouter } from "next/navigation";
+import { Dialog, DialogContent } from "~/app/components/floating/dialog";
+import Button from "~/app/components/button";
+import Spinner from "~/app/components/svgs/spinner";
+import Submit from "~/app/components/svgs/submit";
 import { z } from "zod";
+import { create } from "zustand";
 import { api } from "~/trpc/react";
-import { Button, Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
-import Loading from "../svgs/spinner";
+import { useRouter } from "next/navigation";
 
 const FolderSchema = z.object({
   type: z.literal("folder"),
@@ -46,7 +47,7 @@ export const useTitleModalStore = create<State & Action>((set) => ({
   updateMetaDataState: (metaData) => set(() => ({ metaData })),
 }));
 
-export const useOpenAddTitleModal = () => {
+export const useOpenAddTitleDialog = () => {
   const { updateInputState, updateMetaDataState, updateIsOpenState } =
     useTitleModalStore((state) => state);
   const handleOpen = (
@@ -61,7 +62,7 @@ export const useOpenAddTitleModal = () => {
   return handleOpen;
 };
 
-export const useSubmitFileModal = () => {
+const useSubmitTitleModal = () => {
   const {
     input,
     metaData,
@@ -107,7 +108,7 @@ export const useSubmitFileModal = () => {
   return { handleSubmit };
 };
 
-export default function AddTitleModal() {
+export default function AddFileOrFolderTitleDialog() {
   const {
     isOpen,
     input,
@@ -116,49 +117,34 @@ export default function AddTitleModal() {
     updateInputState,
     isLoading,
   } = useTitleModalStore((state) => state);
-  const { handleSubmit } = useSubmitFileModal();
+
+  const { handleSubmit } = useSubmitTitleModal();
+
   return (
-    <Dialog
-      open={isOpen}
-      as="div"
-      className="fixed z-10 focus:outline-none"
-      onClose={() => {
-        updateIsOpenState(false);
-        setTimeout(() => {
-          updateInputState("");
-        }, 1000);
-      }}
-    >
-      <DialogBackdrop
-        transition
-        className="fixed inset-0 bg-slate-900/70 duration-300 ease-out data-[closed]:opacity-0"
-      />
-      <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div className="flex min-h-screen w-screen items-start justify-center pt-20">
-          <DialogPanel
-            transition
-            className="data-[closed]:transform-[scale(95%)] w-fit rounded-lg border border-slate-600 bg-slate-800 p-1 backdrop-blur-2xl duration-300 ease-out data-[closed]:opacity-0"
+    <Dialog open={isOpen} setOpen={updateIsOpenState}>
+      <DialogContent isCentered className="p-1 dialog">
+        <form className="flex flex-row gap-2" onSubmit={handleSubmit}>
+          <input
+            onChange={(e) => updateInputState(e.target.value)}
+            value={input}
+            data-autofocus
+            className="mr-2 w-[470px] bg-slate-750 py-1 pl-1 text-4xl focus:outline-none"
+            placeholder={`Add a ${metaData?.type} header`}
+          />
+          <Button
+            disabled={isLoading}
+            type="submit"
+            className="flex w-20 items-center justify-center"
+            color="secondary"
           >
-            <form className="flex flex-row gap-2" onSubmit={handleSubmit}>
-              <input
-                onChange={(e) => updateInputState(e.target.value)}
-                value={input}
-                data-autofocus
-                className="bg-slate-800 py-1 pl-1 text-4xl focus:outline-none"
-                placeholder={`Add a ${metaData?.type} header`}
-              />
-              <Button
-                disabled={isLoading}
-                type="submit"
-                className="flex w-[85px] items-center justify-center"
-                color="secondary"
-              >
-                {isLoading ? <Loading className="size-5" /> : "Submit"}
-              </Button>
-            </form>
-          </DialogPanel>
-        </div>
-      </div>
+            {isLoading ? (
+              <Spinner className="size-5" />
+            ) : (
+              <Submit className="size-5" />
+            )}
+          </Button>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }

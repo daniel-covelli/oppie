@@ -21,16 +21,16 @@ export default function OptionsMenu({ folderId }: { folderId: string }) {
       </UIIconButton>
       <MenuContent>
         <MenuItem
-          text="Edit"
-          disabled
-          icon={() => <EditSolid className="size-4 text-slate-400" />}
-        />
-        <MenuItem
           text="Delete"
           icon={() => <TrashSolid className="size-4 text-slate-400" />}
           onClick={() => {
             handleOpen({ type: "folder", folderId });
           }}
+        />
+        <MenuItem
+          text="Edit"
+          disabled
+          icon={() => <EditSolid className="size-4 text-slate-400" />}
         />
       </MenuContent>
     </Menu>

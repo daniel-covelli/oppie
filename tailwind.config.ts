@@ -1,5 +1,6 @@
 import { type Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
+import plugin from "tailwindcss/plugin";
 
 export default {
   content: ["./src/**/*.tsx"],
@@ -18,5 +19,14 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    plugin(function ({ addUtilities }) {
+      addUtilities({
+        ".dialog": {
+          "@apply w-fit rounded-lg border border-slate-600 bg-slate-750": {},
+        },
+      });
+    }),
+  ],
 } satisfies Config;

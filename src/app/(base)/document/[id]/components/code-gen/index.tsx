@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { type FormEvent, Fragment, useEffect, useRef, useState } from "react";
 import { api, type RouterOutputs } from "~/trpc/react";
 import CodeDisplay from "~/app/components/code-display";
 import { useComponentFocusHandler } from "../utils";
@@ -6,15 +6,9 @@ import { InlineWrapper } from "../_client-components";
 import FollowUpActionsMenu from "./follow-up-actions-menu";
 import { AddComponentMenu } from "./add-component-menu";
 import { useControlledMenu } from "~/app/components/floating/menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeading,
-} from "~/app/components/floating/dialog";
-import { CloseButton } from "@headlessui/react";
-import clsx from "clsx";
-import Submit from "~/app/components/svgs/submit";
-import Button from "~/app/components/button";
+
+import PromptDialog from "./prompt-dialog";
+import { useMergeRefs } from "@floating-ui/react";
 
 export default function CodeGen({
   file,
@@ -24,8 +18,8 @@ export default function CodeGen({
   useComponentFocusHandler(file.components);
 
   const [stream, setStream] = useState("");
-  const [input, setInput] = useState("");
-  const [called, setCalled] = useState(false);
+  const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
   const [newCodeComponentId, setNewCodeComponentId] = useState("");
   const {
     data: streamData,
@@ -33,7 +27,7 @@ export default function CodeGen({
     isRefetching,
   } = api.claude.getMessageStreamForFile.useQuery(
     {
-      input,
+      input: prompt,
       fileId: file.id,
     },
     {
@@ -42,8 +36,6 @@ export default function CodeGen({
       gcTime: 0,
     },
   );
-
-  const [isPromptingOpen, setIsPromptingOpen] = useState(false);
 
   const utils = api.useUtils();
   const addEmptyComponent = api.component.addEmptyComponent.useMutation({
@@ -55,10 +47,10 @@ export default function CodeGen({
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isRefetching || called) {
+    if (isRefetching) {
       contentRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [called, isRefetching]);
+  }, [loading, isRefetching]);
 
   useEffect(() => {
     if (streamData && streamData?.length > 0) {
@@ -66,16 +58,41 @@ export default function CodeGen({
     }
   }, [streamData]);
 
-  const { isMenuOpen, setIsMenuOpen, setMenuAnchorRef, menuAnchorRef } =
-    useControlledMenu();
+  const handlePromptSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStream("");
+    setLoading(true);
+    setIsPromptingOpen(false);
+    try {
+      const component = await addEmptyComponent.mutateAsync({
+        fileId: file.id,
+        type: "CODE",
+      });
+      setNewCodeComponentId(component.id);
+      await refetch();
+      setPrompt("");
+      setIsFollowUpMenuOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const {
+    isMenuOpen: isFollowUpMenuOpen,
+    setIsMenuOpen: setIsFollowUpMenuOpen,
+    setMenuAnchorRef,
+    menuAnchorRef,
+  } = useControlledMenu();
 
   const [modalAnchorRef, setModalAnchorRef] = useState<HTMLElement | null>(
     null,
   );
 
+  const [isPromptingOpen, setIsPromptingOpen] = useState(false);
+
   return (
     <>
-      {!isPromptingOpen && !stream && !called && (
+      {!isPromptingOpen && !stream && !loading && (
         <AddComponentMenu
           id={file.id}
           codeOutputType={file.codeOutputType}
@@ -83,10 +100,10 @@ export default function CodeGen({
         />
       )}
 
-      {file.codeOutputType && (called || !!stream) && (
+      {file.codeOutputType && (loading || !!stream) && (
         <InlineWrapper>
-          <div ref={setMenuAnchorRef}>
-            {called && !stream && (
+          <div>
+            {loading && !stream && (
               <div className="h-96 w-full animate-pulse rounded-lg bg-slate-700" />
             )}
             {!!stream &&
@@ -100,80 +117,33 @@ export default function CodeGen({
           </div>
         </InlineWrapper>
       )}
-      <div ref={setModalAnchorRef} className="ml-[37px] bg-slate-100" />
+      <div
+        ref={useMergeRefs([setModalAnchorRef, setMenuAnchorRef])}
+        className="ml-[37px] bg-slate-100"
+      />
       <FollowUpActionsMenu
         fileId={file.id}
         setStream={setStream}
         stream={stream}
-        open={isMenuOpen}
-        setOpen={setIsMenuOpen}
+        open={isFollowUpMenuOpen}
+        setOpen={setIsFollowUpMenuOpen}
         anchorRef={menuAnchorRef}
         newCodeComponentId={newCodeComponentId}
         setIsPromptingOpen={setIsPromptingOpen}
       />
-
-      <Dialog
+      <PromptDialog
         anchorRef={modalAnchorRef}
-        setOpen={setIsPromptingOpen}
+        loading={loading}
         open={isPromptingOpen}
-        handleOutsidePress={() => setStream("")}
-        placement="bottom-start"
-      >
-        <DialogContent className="rounded border border-slate-600 bg-slate-750 p-2">
-          {!file.codeOutputType ? (
-            <Fragment />
-          ) : (
-            <>
-              <DialogHeading className={"pb-1 text-xs text-slate-200"}>
-                What code would you like to generate?
-              </DialogHeading>
-              <form
-                className="flex flex-row items-end"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  setIsPromptingOpen(false);
-                  setStream("");
-                  setCalled(true);
-                  const component = await addEmptyComponent.mutateAsync({
-                    fileId: file.id,
-                    type: "CODE",
-                  });
-                  setNewCodeComponentId(component.id);
-                  await refetch();
-                  setCalled(false);
-                  setInput("");
-                  setIsMenuOpen(true);
-                }}
-              >
-                <textarea
-                  className={clsx(
-                    `mr-2 w-full resize-none bg-transparent text-lg focus:outline-none`,
-                  )}
-                  placeholder="Generate..."
-                  value={input}
-                  rows={3}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      e.currentTarget.form?.requestSubmit();
-                    }
-                  }}
-                />
-                <Button
-                  as={CloseButton}
-                  type="submit"
-                  variant="filled"
-                  color="secondary"
-                  onClick={() => setIsPromptingOpen(false)}
-                >
-                  <Submit className="size-4" />
-                </Button>
-              </form>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        setOpen={setIsPromptingOpen}
+        prompt={prompt}
+        onPromptChange={(e) => setPrompt(e.target.value)}
+        handleSubmit={handlePromptSubmit}
+        handleDialogCanceled={() => {
+          setPrompt("");
+          setStream("");
+        }}
+      />
 
       <div ref={contentRef} />
     </>

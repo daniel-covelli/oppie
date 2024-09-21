@@ -24,10 +24,7 @@ const AlertDialog = ({
 }: AlertModalProps) => {
   return (
     <Dialog {...dialogProps}>
-      <DialogContent
-        isCentered
-        className="w-full max-w-md rounded-lg border border-slate-600 bg-slate-750 p-6"
-      >
+      <DialogContent isCentered className="max-w-md p-6 dialog">
         <DialogHeading className="text-base font-medium">
           {heading}
         </DialogHeading>

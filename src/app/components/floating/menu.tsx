@@ -242,7 +242,7 @@ export const MenuItem = forwardRef<HTMLButtonElement, DropdownButtonProps>(
         tabIndex={isActive ? 0 : -1}
         type="button"
         role="menuitem"
-        className="gap-3"
+        className="w-full gap-3"
         {...getItemProps({
           onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
             onClick?.(event);

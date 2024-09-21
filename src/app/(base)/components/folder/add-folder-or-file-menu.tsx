@@ -1,4 +1,3 @@
-import { useOpenAddTitleModal } from "~/app/components/floating/add-title-modal";
 import {
   Menu,
   MenuContent,
@@ -9,13 +8,14 @@ import { UIIconButton } from "~/app/components/icon-button";
 import FilePlus from "~/app/components/svgs/file-plus";
 import FolderPlus from "~/app/components/svgs/folder-plus";
 import Plus from "~/app/components/svgs/plus";
+import { useOpenAddTitleDialog } from "../add-title-dialog";
 
 export default function AddFolderOrFileMenu({
   folderId,
 }: {
   folderId: string;
 }) {
-  const handleOpen = useOpenAddTitleModal();
+  const handleOpen = useOpenAddTitleDialog();
   return (
     <Menu>
       <UIIconButton asChild>

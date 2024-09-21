@@ -4,11 +4,10 @@ import { api, type RouterOutputs } from "~/trpc/react";
 import Folder from "./folder";
 import ActionWrapper from "~/app/components/action-wrapper";
 import Plus from "~/app/components/svgs/plus";
-import AddTitleModal, {
-  useOpenAddTitleModal,
-} from "~/app/components/floating/add-title-modal";
+
 import IconButton from "~/app/components/icon-button";
 import { AlertDeleteFileOrFolder } from "./alert-delete-file-or-folder";
+import AddTitleDialog, { useOpenAddTitleDialog } from "./add-title-dialog";
 
 export default function Folders({
   initialFolders,
@@ -18,11 +17,11 @@ export default function Folders({
   const { data: folders } = api.folder.getFolders.useQuery(undefined, {
     initialData: initialFolders,
   });
-  const handleOpen = useOpenAddTitleModal();
+  const handleOpen = useOpenAddTitleDialog();
 
   return (
     <>
-      <AddTitleModal />
+      <AddTitleDialog />
       <AlertDeleteFileOrFolder />
       <div className="flex flex-col">
         <div className="pl-2.5 pr-2">
