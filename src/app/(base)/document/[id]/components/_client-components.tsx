@@ -20,7 +20,7 @@ export default function FileContent({
     { id: file.id },
     { initialData: file },
   );
-  console.log("components", file.components);
+
   const { components, manageDeleteComponent, lastComponentRef } =
     useComponentFocusHandler(data.components);
 

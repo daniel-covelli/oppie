@@ -262,7 +262,6 @@ export function Message() {
     setSubmitted(false);
     setInput("");
   };
-  console.log("data.message", JSON.stringify(data?.message, null, 2));
 
   return (
     <div>

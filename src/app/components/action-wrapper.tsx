@@ -15,7 +15,6 @@ export default function ActionWrapper({
 }>) {
   const [hovered, setHovered] = useState(false);
 
-  console.log("hovered", hovered);
   return (
     <div
       className={clsx(
