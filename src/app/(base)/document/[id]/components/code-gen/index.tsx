@@ -9,6 +9,7 @@ import { useControlledMenu } from "~/app/components/floating/menu";
 
 import PromptDialog from "./prompt-dialog";
 import { useMergeRefs } from "@floating-ui/react";
+import Question from "./question";
 
 export default function CodeGen({
   file,
@@ -112,7 +113,7 @@ export default function CodeGen({
                   <CodeDisplay value={stream} type={file.codeOutputType} />
                 </div>
               ) : (
-                <p>{stream}</p>
+                <Question stream={stream} />
               ))}
           </div>
         </InlineWrapper>
